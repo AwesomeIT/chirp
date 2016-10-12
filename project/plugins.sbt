@@ -16,3 +16,15 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-digest" % "1.1.1")
 addSbtPlugin("com.typesafe.sbt" % "sbt-mocha" % "1.1.0")
 
 addSbtPlugin("org.irundaia.sbt" % "sbt-sassify" % "1.4.6")
+
+// dotenv
+resolvers += Resolver.url(
+  "bintray-sbt-plugin-releases",
+  url("http://dl.bintray.com/content/sbt/sbt-plugin-releases"))(
+  Resolver.ivyStylePatterns)
+
+addSbtPlugin("me.lessis" % "bintray-sbt" % "0.1.1")
+
+resolvers += Classpaths.sbtPluginReleases
+
+addSbtPlugin("au.com.onegeek" %% "sbt-dotenv" % "1.1.36")
