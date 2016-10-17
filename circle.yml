@@ -1,0 +1,28 @@
+machine:
+  java:
+    version: oraclejdk8
+  environment:
+      CIRCLE_ENV: test
+      DATABASE_URL: jdbc:postgresql://127.0.0.1:5432/chirp
+
+dependencies:
+  pre:
+    - wget -q https://dl.bintray.com/sbt/debian/sbt-0.13.11.deb
+    - sudo dpkg -i sbt-0.13.11.deb
+  override:
+    - sbt compile
+  cache_directories:
+      - "~/.ivy2"
+      - "~/.sbt"
+
+database:
+  override:
+    - sudo su - postgres -c "echo \"create user chirp with password 'chirp';\" | psql"
+    - sudo su - postgres -c "echo \"create database chirp with owner chirp;\" | psql"
+    - sudo su - postgres -c "echo \"create schema chirp;\" | psql chirp"
+    - sudo su - postgres -c "echo \"grant all on schema chirp to chirp;\" | psql chirp"
+    - sudo su - postgres -c "echo \"grant all on all tables in schema chirp to chirp;\" | psql chirp"
+
+test:
+  override:
+    - sbt test
