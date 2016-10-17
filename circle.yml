@@ -21,7 +21,7 @@ database:
     - sudo su - postgres -c "echo \"create database chirp with owner chirp;\" | psql"
     - sudo su - postgres -c "echo \"create schema chirp;\" | psql chirp"
     - sudo su - postgres -c "echo \"grant all on schema chirp to chirp;\" | psql chirp"
-    - sudo su - postgres -c "echo \"grant all on tables in schema chirp to chirp;\" | psql chirp"
+    - sudo su - postgres -c "echo \"grant all on all tables in schema chirp to chirp;\" | psql chirp"
 
 test:
   override:
