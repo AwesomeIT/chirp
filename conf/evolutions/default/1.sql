@@ -1,4 +1,6 @@
 # --- !Ups
+SET SEARCH_PATH TO "chirp";
+
 CREATE TABLE "chirp"."experiment" (
   "id" serial NOT NULL,
   "name" varchar(255) NOT NULL,
