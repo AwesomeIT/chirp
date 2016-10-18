@@ -36,3 +36,9 @@ addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "latest.integration")
 // Codacy test runner
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.3.5")
 addSbtPlugin("com.codacy" % "sbt-codacy-coverage" % "1.3.4")
+
+// Addl. build support
+libraryDependencies ++= Seq(
+  "org.postgresql" % "postgresql" % "9.4-1200-jdbc41",
+  "com.typesafe.slick" %% "slick-codegen" % "3.1.1"
+)

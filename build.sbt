@@ -1,3 +1,5 @@
+import chirp.build.SlickTableGeneratorRunner
+
 name := """chirp"""
 
 version := "1.0-SNAPSHOT"
@@ -20,13 +22,12 @@ libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "9.4-1200-jdbc41",
   "com.typesafe.play" %% "play-slick" % "2.0.0",
   "com.typesafe.play" %% "play-slick" % "2.0.0",
-  "com.typesafe.play" %% "play-slick-evolutions" % "2.0.0",
-  "com.typesafe.slick" %% "slick-codegen" % "3.1.1"
+  "com.typesafe.play" %% "play-slick-evolutions" % "2.0.0"
 )
 
 lazy val generate_tables = taskKey[Unit]("generate_tables")
 generate_tables := {
-  (runMain in Compile).toTask(" org.birdfeed.chirp.build.TableGenerator").value
+  SlickTableGeneratorRunner.generate
 }
 
 compile in Compile <<= (compile in Compile).dependsOn(generate_tables)
