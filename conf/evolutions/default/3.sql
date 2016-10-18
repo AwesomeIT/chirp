@@ -26,3 +26,4 @@ ALTER TABLE "chirp"."score"
 
 # --- !Downs
 DROP TABLE "chirp"."user" CASCADE;
+DROP TYPE Role;
