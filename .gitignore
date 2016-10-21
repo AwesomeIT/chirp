@@ -1,4 +1,3 @@
-app/org/birdfeed/chirp/database/Tables.scala
 *.DS_Store
 logs
 target
