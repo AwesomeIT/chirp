@@ -1,12 +1,11 @@
 import chirp.build.SlickTableGeneratorRunner
 
 name := """chirp"""
-
 version := "1.0-SNAPSHOT"
-
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
-
 scalaVersion := "2.11.7"
+
+fork in run := true
 
 libraryDependencies ++= Seq(
   evolutions,
@@ -30,4 +29,5 @@ generate_tables := {
   SlickTableGeneratorRunner.generate
 }
 
-compile in Compile <<= (compile in Compile).dependsOn(generate_tables)
+// If seed is empty, SBT will refuse to build. Use only locally!
+// compile in Compile <<= (compile in Compile).dependsOn(generate_tables)
