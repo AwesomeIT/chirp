@@ -244,9 +244,9 @@ trait Tables {
    *  @param id Database column id SqlType(serial), AutoInc, PrimaryKey
    *  @param name Database column name SqlType(varchar), Length(255,true)
    *  @param email Database column email SqlType(varchar), Length(255,true)
-   *  @param password Database column password SqlType(varchar), Length(255,true)
+   *  @param bcryptHash Database column bcrypt_hash SqlType(varchar), Length(255,true)
    *  @param roleId Database column role_id SqlType(int4) */
-  case class UserRow(id: Int, name: String, email: String, password: String, roleId: Int)
+  case class UserRow(id: Int, name: String, email: String, bcryptHash: String, roleId: Int)
   /** GetResult implicit for fetching UserRow objects using plain SQL queries */
   implicit def GetResultUserRow(implicit e0: GR[Int], e1: GR[String]): GR[UserRow] = GR{
     prs => import prs._
@@ -254,9 +254,9 @@ trait Tables {
   }
   /** Table description of table user. Objects of this class serve as prototypes for rows in queries. */
   class User(_tableTag: Tag) extends Table[UserRow](_tableTag, Some("chirp"), "user") {
-    def * = (id, name, email, password, roleId) <> (UserRow.tupled, UserRow.unapply)
+    def * = (id, name, email, bcryptHash, roleId) <> (UserRow.tupled, UserRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(id), Rep.Some(name), Rep.Some(email), Rep.Some(password), Rep.Some(roleId)).shaped.<>({r=>import r._; _1.map(_=> UserRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(id), Rep.Some(name), Rep.Some(email), Rep.Some(bcryptHash), Rep.Some(roleId)).shaped.<>({r=>import r._; _1.map(_=> UserRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(serial), AutoInc, PrimaryKey */
     val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
@@ -264,8 +264,8 @@ trait Tables {
     val name: Rep[String] = column[String]("name", O.Length(255,varying=true))
     /** Database column email SqlType(varchar), Length(255,true) */
     val email: Rep[String] = column[String]("email", O.Length(255,varying=true))
-    /** Database column password SqlType(varchar), Length(255,true) */
-    val password: Rep[String] = column[String]("password", O.Length(255,varying=true))
+    /** Database column bcrypt_hash SqlType(varchar), Length(255,true) */
+    val bcryptHash: Rep[String] = column[String]("bcrypt_hash", O.Length(255,varying=true))
     /** Database column role_id SqlType(int4) */
     val roleId: Rep[Int] = column[Int]("role_id")
 
