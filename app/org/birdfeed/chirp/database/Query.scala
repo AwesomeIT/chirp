@@ -53,9 +53,9 @@ object Query {
     }
 
     def authenticate(email: String, password: String): Future[Option[User]] = {
-      where(_.email === email).map(_.map(_.head)).map(_.filter(
+      where(_.email === email).map(_.map(_.filter(
         (user: User) => password.isBcrypted(user.slickTableElement.bcryptHash)
-      ))
+      ))).map(_.map(_.headOption)).map(_.head)
     }
 
     def create(name: String, email: String, password: String, roleId: Int): Future[Option[User]] = {

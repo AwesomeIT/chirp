@@ -35,7 +35,6 @@ class QuerySpec extends PlaySpec with OneServerPerSuite {
         java.util.UUID.randomUUID.toString, s"steve${Random.nextInt()}@mail.net"
       )
 
-
       val createdUser = Await.result(
         Query.User.create("steve", email, password, 1), Duration.Inf
       ) match {
