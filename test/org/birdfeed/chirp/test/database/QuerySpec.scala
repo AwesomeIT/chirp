@@ -3,6 +3,7 @@ package org.birdfeed.chirp.test.database
 import org.scalatestplus.play._
 import scala.concurrent.duration._
 import scala.concurrent._
+import scala.util.Random
 
 import org.birdfeed.chirp.database.Query
 
@@ -30,19 +31,19 @@ class QuerySpec extends PlaySpec with OneServerPerSuite {
     }
 
     "have working authentication" in {
-      val password = java.util.UUID.randomUUID.toString
+      lazy val (email, password) = (
+        java.util.UUID.randomUUID.toString, s"steve${Random.nextInt()}@mail.net"
+      )
 
       val createdUser = Await.result(
-        Query.User.create(
-          "steve", "steve@mail.net", password, 1
-        ), Duration.Inf
+        Query.User.create("steve", email, password, 1), Duration.Inf
       ) match {
         case Some(user: Query.User.User) => user
         case None => fail("User not created")
       }
 
       val withAuthenticate = Await.result(
-        Query.User.authenticate("steve@mail.net", password), Duration.Inf
+        Query.User.authenticate(email, password), Duration.Inf
       ) match {
         case Some(user: Query.User.User) => user
         case None => fail("User should have been found")
