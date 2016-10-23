@@ -58,4 +58,26 @@ class QuerySpec extends WordSpec with MustMatchers with OneServerPerSuite with Q
       )
     }
   }
+
+  "Experiments" must {
+    "be creatable and retrievable" in {
+      val createdExperiment = Await.result(
+        Query.Experiment.create(
+          java.util.UUID.randomUUID.toString, java.sql.Date), Duration.Inf
+      ) match {
+        case Some(experiment: Query.Experiment.Experiment) => experiment
+        case None => fail("Experiment not created")
+      }
+
+      val retrievedExperiment = Await.result(
+        Query.Experiment.find(createdExperiment.slickTableElement.id), Duration.Inf
+      ) match {
+        case Some(experiment: Query.Experiment.Experiment) => experiment
+        case None => fail("Could not retrieve user")
+      }
+
+      (createdExperiment.slickTableElement) must equal (retrievedExperiment.slickTableElement)
+
+    }
+  }
 }

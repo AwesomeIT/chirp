@@ -1,5 +1,9 @@
 package org.birdfeed.chirp.database
 
+import java.sql.Date
+import java.util.Calendar
+
+import com.google.inject.Inject
 import com.github.t3hnar.bcrypt._
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
@@ -40,6 +44,40 @@ trait Query {
           Try(rows.map(new Sample(_)))
         }
       )
+    }
+  }
+
+  object Experiment {
+    def find(id: Int): Future[Option[Experiment]] = {
+      where(_.id === id).asInstanceOf[Future[Option[Experiment]]]
+    }
+
+    def create(name: String, start_date: java.sql.Date, end_date: java.sql.Date = null): Future[Option[Experiment]] = {
+      val currentDate = new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime)
+      dbConfig.db.run(
+        Tables.Experiment returning Tables.Experiment.map(_.id) into (
+          (experiment_row, id) => experiment_row.copy(id = id)
+          ) += Tables.ExperimentRow(0, name, start_date, end_date, currentDate, currentDate)
+      ).map((experiment_row: Tables.Experiment#TableElementType) => {
+        Option(Experiment(experiment_row))
+      })
+    }
+
+    def delete(id: Int): Future[Int] = {
+      dbConfig.db.run(Tables.Experiment.filter(_.id === id).delete)
+    }
+
+    def where(predicate: Tables.Experiment => Rep[Boolean]):
+      Future[Option[Seq[Experiment]]] = {
+      dbConfig.db.run(Tables.Experiment.filter(predicate).result).map(
+        (rows: Seq[Tables.Experiment#TableElementType]) => {
+          Option(rows.map(Experiment))
+        }
+      )
+    }
+
+    case class Experiment (var slickTableElement: Tables.Experiment#TableElementType) {
+      def remove: Future[Int] = { delete(slickTableElement.id) }
     }
   }
 
