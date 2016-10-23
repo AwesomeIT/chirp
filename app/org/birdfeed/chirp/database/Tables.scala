@@ -22,20 +22,20 @@ trait Tables {
    *  @param id Database column id SqlType(serial), AutoInc, PrimaryKey
    *  @param name Database column name SqlType(varchar), Length(255,true)
    *  @param startDate Database column start_date SqlType(date)
-   *  @param endDate Database column end_date SqlType(date)
+   *  @param endDate Database column end_date SqlType(date), Default(None)
    *  @param createdAt Database column created_at SqlType(date)
    *  @param updatedAt Database column updated_at SqlType(date) */
-  case class ExperimentRow(id: Int, name: String, startDate: java.sql.Date, endDate: java.sql.Date, createdAt: java.sql.Date, updatedAt: java.sql.Date)
+  case class ExperimentRow(id: Int, name: String, startDate: java.sql.Date, endDate: Option[java.sql.Date] = None, createdAt: java.sql.Date, updatedAt: java.sql.Date)
   /** GetResult implicit for fetching ExperimentRow objects using plain SQL queries */
-  implicit def GetResultExperimentRow(implicit e0: GR[Int], e1: GR[String], e2: GR[java.sql.Date]): GR[ExperimentRow] = GR{
+  implicit def GetResultExperimentRow(implicit e0: GR[Int], e1: GR[String], e2: GR[java.sql.Date], e3: GR[Option[java.sql.Date]]): GR[ExperimentRow] = GR{
     prs => import prs._
-    ExperimentRow.tupled((<<[Int], <<[String], <<[java.sql.Date], <<[java.sql.Date], <<[java.sql.Date], <<[java.sql.Date]))
+    ExperimentRow.tupled((<<[Int], <<[String], <<[java.sql.Date], <<?[java.sql.Date], <<[java.sql.Date], <<[java.sql.Date]))
   }
   /** Table description of table experiment. Objects of this class serve as prototypes for rows in queries. */
   class Experiment(_tableTag: Tag) extends Table[ExperimentRow](_tableTag, Some("chirp"), "experiment") {
     def * = (id, name, startDate, endDate, createdAt, updatedAt) <> (ExperimentRow.tupled, ExperimentRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(id), Rep.Some(name), Rep.Some(startDate), Rep.Some(endDate), Rep.Some(createdAt), Rep.Some(updatedAt)).shaped.<>({r=>import r._; _1.map(_=> ExperimentRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(id), Rep.Some(name), Rep.Some(startDate), endDate, Rep.Some(createdAt), Rep.Some(updatedAt)).shaped.<>({r=>import r._; _1.map(_=> ExperimentRow.tupled((_1.get, _2.get, _3.get, _4, _5.get, _6.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(serial), AutoInc, PrimaryKey */
     val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
@@ -43,8 +43,8 @@ trait Tables {
     val name: Rep[String] = column[String]("name", O.Length(255,varying=true))
     /** Database column start_date SqlType(date) */
     val startDate: Rep[java.sql.Date] = column[java.sql.Date]("start_date")
-    /** Database column end_date SqlType(date) */
-    val endDate: Rep[java.sql.Date] = column[java.sql.Date]("end_date")
+    /** Database column end_date SqlType(date), Default(None) */
+    val endDate: Rep[Option[java.sql.Date]] = column[Option[java.sql.Date]]("end_date", O.Default(None))
     /** Database column created_at SqlType(date) */
     val createdAt: Rep[java.sql.Date] = column[java.sql.Date]("created_at")
     /** Database column updated_at SqlType(date) */
@@ -271,6 +271,9 @@ trait Tables {
 
     /** Foreign key referencing Role (database name user_role_fk) */
     lazy val roleFk = foreignKey("user_role_fk", roleId, Role)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.Restrict)
+
+    /** Index over (id,email) (database name index_user_id_email) */
+    val index1 = index("index_user_id_email", (id, email))
   }
   /** Collection-like TableQuery object for table User */
   lazy val User = new TableQuery(tag => new User(tag))

@@ -52,7 +52,7 @@ trait Query {
       where(_.id === id).asInstanceOf[Future[Option[Experiment]]]
     }
 
-    def create(name: String, start_date: java.sql.Date, end_date: java.sql.Date = null): Future[Option[Experiment]] = {
+    def create(name: String, start_date: java.sql.Date, end_date: Option[java.sql.Date] = null): Future[Option[Experiment]] = {
       val currentDate = new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime)
       dbConfig.db.run(
         Tables.Experiment returning Tables.Experiment.map(_.id) into (

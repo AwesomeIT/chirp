@@ -60,10 +60,10 @@ class QuerySpec extends WordSpec with MustMatchers with OneServerPerSuite with Q
   }
 
   "Experiments" must {
-    "be creatable and retrievable" in {
+    "be creatable, retrievable, and deletable" in {
       val createdExperiment = Await.result(
         Query.Experiment.create(
-          java.util.UUID.randomUUID.toString, java.sql.Date), Duration.Inf
+          java.util.UUID.randomUUID.toString, new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime)), Duration.Inf
       ) match {
         case Some(experiment: Query.Experiment.Experiment) => experiment
         case None => fail("Experiment not created")
@@ -78,6 +78,9 @@ class QuerySpec extends WordSpec with MustMatchers with OneServerPerSuite with Q
 
       (createdExperiment.slickTableElement) must equal (retrievedExperiment.slickTableElement)
 
+      Await.result(
+        Query.Experiment.delete(createdExperiment.slickTableElement.id), Duration.Inf
+      ) must equal (retrievedExperiment.slickTableElement.id)
     }
   }
 }
