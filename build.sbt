@@ -14,8 +14,8 @@ libraryDependencies ++= Seq(
   "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test,
 
   // Auth
-  "jp.t2v" %% "play2-auth"        % "0.14.2",
-  "jp.t2v" %% "play2-auth-test"   % "0.14.2" % Test,
+  "com.github.t3hnar" %% "scala-bcrypt" % "2.6",
+  "com.nulab-inc" %% "play2-oauth2-provider" % "1.0.0",
 
   // FRM, Evolutions support
   "org.postgresql" % "postgresql" % "9.4-1200-jdbc41",
