@@ -7,11 +7,15 @@ import scala.util._
 import scala.concurrent._
 import scala.concurrent.duration.Duration
 
-
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
 
 import org.birdfeed.chirp.database.Query
+import scala.concurrent.duration._
+import scala.concurrent._
+import scala.util.Random
+import org.birdfeed.chirp.database.{Query, Tables}
+import org.birdfeed.chirp.database.Query.Experiment.Experiment
 
 class QuerySpec extends WordSpec with MustMatchers with OneServerPerSuite with Query {
   // This is what happens when your framework is written caring more about
@@ -60,10 +64,11 @@ class QuerySpec extends WordSpec with MustMatchers with OneServerPerSuite with Q
   }
 
   "Experiments" must {
-    "be creatable, retrievable, and deletable" in {
+    "be creatable and retrievable" in {
       val createdExperiment = Await.result(
         Query.Experiment.create(
-          java.util.UUID.randomUUID.toString, new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime)), Duration.Inf
+          java.util.UUID.randomUUID.toString, new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime),
+          Some(new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime))), Duration.Inf
       ) match {
         case Some(experiment: Query.Experiment.Experiment) => experiment
         case None => fail("Experiment not created")
@@ -76,11 +81,45 @@ class QuerySpec extends WordSpec with MustMatchers with OneServerPerSuite with Q
         case None => fail("Could not retrieve user")
       }
 
-      (createdExperiment.slickTableElement) must equal (retrievedExperiment.slickTableElement)
+      createdExperiment must equal (retrievedExperiment)
+    }
+    "be deletable" in {
+      val createdExperiment = Await.result(
+        Query.Experiment.create(
+          java.util.UUID.randomUUID.toString, new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime),
+          Some(new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime))), Duration.Inf
+      ) match {
+        case Some(experiment: Query.Experiment.Experiment) => experiment
+        case None => fail("Experiment not created")
+      }
+
+      val objId = createdExperiment.slickTableElement.id
 
       Await.result(
-        Query.Experiment.delete(createdExperiment.slickTableElement.id), Duration.Inf
-      ) must equal (retrievedExperiment.slickTableElement.id)
+        Query.Experiment.delete(objId), Duration.Inf
+      )
+
+      Await.result(
+        Query.Experiment.find(objId), Duration.Inf
+      ) must equal (None)
+    }
+    "be updatable" in {
+      val createdExperiment = Await.result(
+        Query.Experiment.create(
+          java.util.UUID.randomUUID.toString, new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime),
+          Some(new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime))), Duration.Inf
+      ) match {
+        case Some(experiment: Query.Experiment.Experiment) => experiment
+        case None => fail("Experiment not created")
+      }
+      val row = createdExperiment.slickTableElement
+      val newExperiment = Tables.ExperimentRow(row.id, row.name, new java.sql.Date(0), row.endDate, row.createdAt, row.updatedAt)
+
+      Await.result(Query.Experiment.updateById(row.id, newExperiment), Duration.Inf)
+
+      Await.result(
+        Query.Experiment.find(createdExperiment.slickTableElement.id), Duration.Inf
+      ) must not equal (createdExperiment)
     }
   }
 }

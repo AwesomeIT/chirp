@@ -49,10 +49,10 @@ trait Query {
 
   object Experiment {
     def find(id: Int): Future[Option[Experiment]] = {
-      where(_.id === id).asInstanceOf[Future[Option[Experiment]]]
+      where(_.id === id).map(_.map(_.headOption)).map(_.head)
     }
 
-    def create(name: String, start_date: java.sql.Date, end_date: Option[java.sql.Date] = null): Future[Option[Experiment]] = {
+    def create(name: String, start_date: Date, end_date: Option[Date] = None): Future[Option[Experiment]] = {
       val currentDate = new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime)
       dbConfig.db.run(
         Tables.Experiment returning Tables.Experiment.map(_.id) into (
@@ -63,8 +63,13 @@ trait Query {
       })
     }
 
-    def delete(id: Int): Future[Int] = {
+    def delete(id: Int): Future[Int] =
       dbConfig.db.run(Tables.Experiment.filter(_.id === id).delete)
+
+    def updateById(id: Int, row: Tables.Experiment#TableElementType): Future[Int] = {
+      dbConfig.db.run(Tables.Experiment.filter(_.id === id)
+        .update(Tables.ExperimentRow(row.id, row.name, row.startDate,
+          row.endDate, row.createdAt, new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime))))
     }
 
     def where(predicate: Tables.Experiment => Rep[Boolean]):
@@ -78,6 +83,17 @@ trait Query {
 
     case class Experiment (var slickTableElement: Tables.Experiment#TableElementType) {
       def remove: Future[Int] = { delete(slickTableElement.id) }
+
+      override def equals(rhs: Any): Boolean = {
+        if (rhs.getClass != this.getClass) { false }
+        else {
+          val cmp = rhs.asInstanceOf[this.type]
+          slickTableElement.id == cmp.slickTableElement.id &&
+          slickTableElement.name == cmp.slickTableElement.name &&
+          slickTableElement.startDate.toString == cmp.slickTableElement.startDate.toString &&
+          slickTableElement.endDate.toString == cmp.slickTableElement.endDate.toString
+        }
+      }
     }
   }
 
