@@ -21,7 +21,7 @@ class QuerySpec extends PlaySpec with OneServerPerSuite {
       }
 
       val retrievedUser = Await.result(
-        Query.User.find(createdUser.slickTableElement.id), Duration.Inf
+        Query.User.find(createdUser.id), Duration.Inf
       ) match {
         case Some(user: Query.User.User) => user
         case None => fail("Could not retrieve user")
