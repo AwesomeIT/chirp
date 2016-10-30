@@ -1,6 +1,6 @@
 package controllers.v1
 
-import com.google.inject.Inject
+import com.google.inject._
 import scala.concurrent._
 import akka.actor.ActorSystem
 
