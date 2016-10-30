@@ -1,15 +1,17 @@
 package org.birdfeed.chirp.database
 
 import com.google.inject.Inject
-import play.api.Play
-import play.api.db.slick.DatabaseConfigProvider
+import com.github.t3hnar.bcrypt._
+
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 
-import com.github.t3hnar.bcrypt._
+import play.api.Play
+import play.api.db.slick.DatabaseConfigProvider
+import play.api.libs.json._
 
 sealed case class InjectedConfig @Inject()(dbConfigProvider: DatabaseConfigProvider)
 
@@ -77,6 +79,16 @@ object Query {
     class User(var slickTE: Tables.User#TableElementType) extends Tables.UserRow(
       slickTE.id, slickTE.name, slickTE.email, slickTE.bcryptHash, slickTE.roleId
     ) with Support[Tables.User#TableElementType] {
+
+      implicit val jsonWrites: Writes[User.User] = Writes { user =>
+        Json.obj(
+          "id" -> id,
+          "name" -> name,
+          "email" -> email,
+          "roleId" -> roleId
+        )
+      }
+
       def reload: Future[Option[User]] = { find(slickTE.id) }
 
       def samples: Future[Option[Seq[Sample.Sample]]] = {
