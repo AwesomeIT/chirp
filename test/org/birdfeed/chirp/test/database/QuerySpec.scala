@@ -75,7 +75,7 @@ class QuerySpec extends WordSpec with MustMatchers with OneServerPerSuite with Q
       }
 
       val retrievedExperiment = Await.result(
-        Query.Experiment.find(createdExperiment.slickTableElement.id), Duration.Inf
+        Query.Experiment.find(createdExperiment.slickTE.id), Duration.Inf
       ) match {
         case Some(experiment: Query.Experiment.Experiment) => experiment
         case None => fail("Could not retrieve user")
@@ -93,7 +93,7 @@ class QuerySpec extends WordSpec with MustMatchers with OneServerPerSuite with Q
         case None => fail("Experiment not created")
       }
 
-      val objId = createdExperiment.slickTableElement.id
+      val objId = createdExperiment.slickTE.id
 
       Await.result(
         Query.Experiment.delete(objId), Duration.Inf
@@ -112,13 +112,12 @@ class QuerySpec extends WordSpec with MustMatchers with OneServerPerSuite with Q
         case Some(experiment: Query.Experiment.Experiment) => experiment
         case None => fail("Experiment not created")
       }
-      val row = createdExperiment.slickTableElement
+      val row = createdExperiment.slickTE
       val newExperiment = Tables.ExperimentRow(row.id, row.name, new java.sql.Date(0), row.endDate, row.createdAt, row.updatedAt)
-
       Await.result(Query.Experiment.updateById(row.id, newExperiment), Duration.Inf)
 
       Await.result(
-        Query.Experiment.find(createdExperiment.slickTableElement.id), Duration.Inf
+        Query.Experiment.find(createdExperiment.slickTE.id), Duration.Inf
       ) must not equal (createdExperiment)
     }
   }

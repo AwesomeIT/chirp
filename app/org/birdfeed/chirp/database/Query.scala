@@ -32,6 +32,10 @@ trait Query {
     def find(id: Int): Future[Try[Sample]] = {
       where(_.id === id).map(_.map(_.head))
     }
+  }
+
+  object Sample {
+    def find(id: Int): Future[Option[Sample]] = { where(_.id === id).map(_.map(_.headOption)).map(_.head) }
 
     /**
       * Filter Sample objects using Slick PG API query.
@@ -48,9 +52,7 @@ trait Query {
   }
 
   object Experiment {
-    def find(id: Int): Future[Option[Experiment]] = {
-      where(_.id === id).map(_.map(_.headOption)).map(_.head)
-    }
+    def find(id: Int): Future[Option[Experiment]] = { where(_.id === id).map(_.map(_.headOption)).map(_.head) }
 
     def create(name: String, start_date: Date, end_date: Option[Date] = None): Future[Option[Experiment]] = {
       val currentDate = new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime)
@@ -59,7 +61,7 @@ trait Query {
           (experiment_row, id) => experiment_row.copy(id = id)
           ) += Tables.ExperimentRow(0, name, start_date, end_date, currentDate, currentDate)
       ).map((experiment_row: Tables.Experiment#TableElementType) => {
-        Option(Experiment(experiment_row))
+        Option(new Experiment(experiment_row))
       })
     }
 
@@ -72,26 +74,30 @@ trait Query {
           row.endDate, row.createdAt, new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime))))
     }
 
-    def where(predicate: Tables.Experiment => Rep[Boolean]):
-      Future[Option[Seq[Experiment]]] = {
+    def where(predicate: Tables.Experiment => Rep[Boolean]): Future[Option[Seq[Experiment]]] = {
       dbConfig.db.run(Tables.Experiment.filter(predicate).result).map(
         (rows: Seq[Tables.Experiment#TableElementType]) => {
-          Option(rows.map(Experiment))
+          Option(rows.map(new Experiment(_)))
         }
       )
     }
 
-    case class Experiment (var slickTableElement: Tables.Experiment#TableElementType) {
-      def remove: Future[Int] = { delete(slickTableElement.id) }
+    class Experiment(var slickTE: Tables.Experiment#TableElementType) extends Tables.ExperimentRow(
+      slickTE.id, slickTE.name, slickTE.startDate, slickTE.endDate, slickTE.createdAt, slickTE.updatedAt
+    ) with Support[Tables.Experiment#TableElementType] {
+
+      def reload: Future[Option[Experiment]] = { find(slickTE.id) }
+
+      def remove: Future[Int] = { delete(slickTE.id) }
 
       override def equals(rhs: Any): Boolean = {
         if (rhs.getClass != this.getClass) { false }
         else {
           val cmp = rhs.asInstanceOf[this.type]
-          slickTableElement.id == cmp.slickTableElement.id &&
-          slickTableElement.name == cmp.slickTableElement.name &&
-          slickTableElement.startDate.toString == cmp.slickTableElement.startDate.toString &&
-          slickTableElement.endDate.toString == cmp.slickTableElement.endDate.toString
+          slickTE.id == cmp.slickTE.id &&
+          slickTE.name == cmp.slickTE.name &&
+          slickTE.startDate.toString == cmp.slickTE.startDate.toString &&
+          slickTE.endDate.toString == cmp.slickTE.endDate.toString
         }
       }
     }
