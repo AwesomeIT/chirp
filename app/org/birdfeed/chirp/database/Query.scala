@@ -16,6 +16,14 @@ import org.birdfeed.chirp.database.models._
 import org.postgresql.util.PSQLException
 import slick.backend.DatabaseConfig
 
+import play.api.Play
+import play.api.db.slick.DatabaseConfigProvider
+import play.api.libs.json._
+
+import scala.util.Try
+
+sealed case class InjectedConfig @Inject()(dbConfigProvider: DatabaseConfigProvider)
+
 case class AuthenticationFailedException(message: String) extends Exception(message)
 case class QueryFailedException(message: String) extends Exception(message)
 
@@ -65,8 +73,9 @@ trait Query {
       })
     }
 
-    def delete(id: Int): Future[Int] =
+    def delete(id: Int): Try[Future[Int]] = Try {
       dbConfig.db.run(Tables.Experiment.filter(_.id === id).delete)
+    }
 
     def updateById(id: Int, row: Tables.Experiment#TableElementType): Future[Int] = {
       dbConfig.db.run(Tables.Experiment.filter(_.id === id)
@@ -85,10 +94,20 @@ trait Query {
     class Experiment(var slickTE: Tables.Experiment#TableElementType) extends Tables.ExperimentRow(
       slickTE.id, slickTE.name, slickTE.startDate, slickTE.endDate, slickTE.createdAt, slickTE.updatedAt
     ) with Support[Tables.Experiment#TableElementType] {
+      implicit val jsonWrites: Writes[Experiment.Experiment] = Writes { user =>
+        Json.obj(
+          "id" -> id,
+          "name" -> name,
+          "startDate" -> startDate,
+          "endDate" -> endDate,
+          "createdAt" -> createdAt,
+          "updatedAt" -> updatedAt
+        )
+      }
 
       def reload: Future[Option[Experiment]] = { find(slickTE.id) }
 
-      def remove: Future[Int] = { delete(slickTE.id) }
+      def remove: Try[Future[Int]] = { delete(slickTE.id) }
 
       override def equals(rhs: Any): Boolean = {
         if (rhs.getClass != this.getClass) { false }
