@@ -13,7 +13,7 @@ import slick.driver.JdbcProfile
 import org.birdfeed.chirp.database.Query
 import scala.concurrent.duration._
 import scala.concurrent._
-import scala.util.Random
+import scala.util.{Random, Try}
 import org.birdfeed.chirp.database.{Query, Tables}
 import org.birdfeed.chirp.database.Query.Experiment.Experiment
 
@@ -95,7 +95,7 @@ class QuerySpec extends WordSpec with MustMatchers with OneServerPerSuite with Q
 
       val objId = createdExperiment.slickTE.id
 
-      Await.result(
+      Try(
         Query.Experiment.delete(objId), Duration.Inf
       )
 
