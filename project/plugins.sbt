@@ -42,3 +42,4 @@ libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "9.4-1200-jdbc41",
   "com.typesafe.slick" %% "slick-codegen" % "3.1.1"
 )
+libraryDependencies ~= { _.map(_.exclude("org.slf4j", "slf4j-simple")) }
