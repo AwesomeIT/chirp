@@ -1,46 +1,53 @@
 package controllers.v1
 
 import com.google.inject._
+
 import scala.concurrent._
 import akka.actor.ActorSystem
-
 import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import org.birdfeed.chirp.database.{Query, Relation}
+import org.birdfeed.chirp.database.models.User
+import org.birdfeed.chirp.helpers.EndpointHandler
+import play.api.db.slick.DatabaseConfigProvider
+import slick.driver.JdbcProfile
 
-import org.birdfeed.chirp.database.Query.User
+import scala.util._
 
 @Singleton
-class UserController @Inject() (actorSystem: ActorSystem)(implicit exec: ExecutionContext) extends Controller {
+class UserController @Inject()(actorSystem: ActorSystem, val dbConfigProvider: DatabaseConfigProvider)(implicit exec: ExecutionContext) extends Controller with EndpointHandler with Query {
+
+  val dbConfig = dbConfigProvider.get[JdbcProfile]
+
+  def authenticate = Action.async(BodyParsers.parse.json) { request =>
+    val authenticateReads: Reads[Future[Try[User]]] = (
+      (JsPath \ "email").read[String] and
+      (JsPath \ "password").read[String]
+    )((email: String, password: String) => {
+      User.authenticate(email, password)
+    })
+
+    dtoWithMarshallingSingle(authenticateReads, request.body, Ok)
+  }
 
   def create = Action.async(BodyParsers.parse.json) { request =>
-    val createReads: Reads[Future[Option[User.User]]] = (
-      (JsPath \ "name").read[String] and
+    val createReads: Reads[Future[Try[User]]] = (
+        (JsPath \ "name").read[String] and
         (JsPath \ "email").read[String] and
         (JsPath \ "password").read[String]
-      )((name: String, email: String, password: String) => {
+    )((name: String, email: String, password: String) => {
       User.create(name, email, password, 2)
     })
 
-    request.body.validate(createReads).fold(
-      errors => {
-        Future {
-          BadRequest(Json.obj("error" -> "Something went wrong. We're sorry about that!"))
-        }
-      },
-      user => {
-        user.flatMap {
-          case Some(user) => Future { Ok(user.jsonWrites.writes(user)) }
-          case None => Future { BadRequest(Json.obj("error" -> "Something else went wrong")) }
-        }
-      }
-    )
+    dtoWithMarshallingSingle(createReads, request.body, Created)
   }
 
   def retrieve(id: String) = Action.async(BodyParsers.parse.json) { request =>
-    User.find(id.toInt).flatMap {
-      case Some(user) => Future { Ok(user.jsonWrites.writes(user)) }
-      case None => Future { BadRequest(Json.obj("error" -> s"User with id ${id} not found")) }
-    }
+    dtoWithErrorHandlingSingle(User.find(id.toInt), Ok)
+  }
+
+  def delete(id: String) = Action.async { request =>
+    anyWithErrorHandlingSingle(User.delete(id.toInt), Ok)
   }
 }
