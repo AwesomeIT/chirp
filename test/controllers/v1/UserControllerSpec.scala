@@ -2,21 +2,17 @@ package controllers.v1
 
 import org.scalatestplus.play._
 import play.api.libs.json._
-import play.api.libs.ws.{WSClient, WSResponse}
-
-import scala.util.{Failure, Random, Success}
-import scala.concurrent.ExecutionContext.Implicits.global
-import org.birdfeed.chirp.database.Query
-import org.scalatest.BeforeAndAfter
-import play.api.Play
+import play.api.libs.ws.WSClient
 import play.api.db.slick.DatabaseConfigProvider
-import play.api.test.TestServer
+
 import slick.driver.JdbcProfile
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-class UserControllerSpec extends PlaySpec with BeforeAndAfter with OneServerPerSuite with Query {
+import org.birdfeed.chirp.database.Query
+
+class UserControllerSpec extends PlaySpec with OneServerPerSuite with Query {
   val wsClient = app.injector.instanceOf[WSClient]
 
   val dbConfigProvider = app.injector.instanceOf(classOf[DatabaseConfigProvider])
@@ -47,9 +43,10 @@ class UserControllerSpec extends PlaySpec with BeforeAndAfter with OneServerPerS
 
     lazy val username = java.util.UUID.randomUUID.toString
     lazy val email = s"${username}@email.com"
-    lazy val created = Await.result(
+
+    Await.result(
       User.create("name", email, email, 1), Duration.Inf
-    ).get
+    )
 
     "authenticate with the correct credentials" in {
       val response = Await.result(
@@ -76,8 +73,6 @@ class UserControllerSpec extends PlaySpec with BeforeAndAfter with OneServerPerS
 
       response.status must equal(401)
     }
-
-
   }
 
   "DELETE /v1/user/:id" should {
