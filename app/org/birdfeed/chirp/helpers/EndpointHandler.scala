@@ -8,7 +8,6 @@ import play.api.libs.json._
 import org.birdfeed.chirp.database.{AuthenticationFailedException, Relation}
 import org.postgresql.util.PSQLException
 import play.api.data.validation.ValidationError
-import slick.collection.heterogeneous.Zero.+
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

@@ -9,9 +9,11 @@ import scala.concurrent._
 import scala.util._
 import play.api.db.slick.DatabaseConfigProvider
 import org.birdfeed.chirp.database.models._
+import org.postgresql.util.PSQLException
 import slick.backend.DatabaseConfig
 
 case class AuthenticationFailedException(message: String) extends Exception(message)
+case class QueryFailedException(message: String) extends Exception(message)
 
 trait Query {
   val dbConfigProvider: DatabaseConfigProvider
@@ -65,11 +67,19 @@ trait Query {
       * @param predicate Predicate for selection.
       * @return Potentially a collection of User relations.
       */
+    // Is this better?
     def where(predicate: Tables.User => Rep[Boolean]): Future[Try[Seq[User]]] = {
-      dbConfig.db.run(Tables.User.filter(predicate).result).map(
-        (rows: Seq[Tables.User#TableElementType]) => { Try(rows.map(new User(dbConfigProvider)(_))) }
-      )
+      dbConfig.db.run(Tables.User.filter(predicate).result).map {
+        case rows: Seq[Tables.User#TableElementType] => Success(rows.map(new User(dbConfigProvider)(_)))
+        case error: Exception => Failure(error)
+        case _ => Failure(QueryFailedException("Query was unsuccessful."))
+      }
     }
+//    def where(predicate: Tables.User => Rep[Boolean]): Future[Try[Seq[User]]] = {
+//      dbConfig.db.run(Tables.User.filter(predicate).result).map(
+//        (rows: Seq[Tables.User#TableElementType]) => { Try(rows.map(new User(dbConfigProvider)(_))) }
+//      )
+//    }
 
     /**
       * Attempt to authenticate user.
