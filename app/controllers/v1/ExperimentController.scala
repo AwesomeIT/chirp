@@ -1,6 +1,5 @@
 package controllers.v1
 
-import java.sql.Date
 import java.text.SimpleDateFormat
 
 import com.google.inject._
@@ -8,18 +7,22 @@ import com.google.inject._
 import scala.util._
 import scala.concurrent._
 import akka.actor.ActorSystem
+import org.birdfeed.chirp.database.{Query, Tables}
+import org.birdfeed.chirp.database.models.Experiment
+import org.birdfeed.chirp.helpers.EndpointHandler
 import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import org.birdfeed.chirp.database.Query.Experiment
-import org.postgresql.util.PSQLException
-import play.api.data.format
+import play.api.db.slick.DatabaseConfigProvider
+import slick.driver.JdbcProfile
 
 @Singleton
-class ExperimentController @Inject() (actorSystem: ActorSystem)(implicit exec: ExecutionContext) extends Controller {
+class ExperimentController @Inject() (actorSystem: ActorSystem, val dbConfigProvider: DatabaseConfigProvider)(implicit exec: ExecutionContext) extends Controller with EndpointHandler with Query {
+
+  val dbConfig = dbConfigProvider.get[JdbcProfile]
 
   def create = Action.async(BodyParsers.parse.json) { request =>
-    val createReads: Reads[Future[Option[Experiment.Experiment]]] = (
+    val createReads: Reads[Future[Try[Experiment]]] = (
       (JsPath \ "name").read[String] and
         (JsPath \ "startDate").read[String] and
         (JsPath \ "endDate").readNullable[String]
@@ -31,32 +34,19 @@ class ExperimentController @Inject() (actorSystem: ActorSystem)(implicit exec: E
         })
     })
 
-    request.body.validate(createReads).fold(
-      errors => {
-        Future {
-          BadRequest(Json.obj("error" -> "Something went wrong. We're sorry about that!"))
-        }
-      },
-      experiment => {
-        experiment.flatMap {
-          case Some(experiment) => Future { Ok(experiment.jsonWrites.writes(experiment)) }
-          case None => Future { BadRequest(Json.obj("error" -> "Something else went wrong")) }
-        }
-      }
-    )
+    dtoWithMarshallingSingle(createReads, request.body, Created)
   }
 
-  def retrieve(id: String) = Action.async { request =>
-    Experiment.find(id.toInt).flatMap {
-      case Some(experiment) => Future { Ok(experiment.jsonWrites.writes(experiment)) }
-      case None => Future { BadRequest(Json.obj("error" -> s"Experiment with id ${id} not found")) }
-    }
+  def retrieve(id: String) = Action.async(BodyParsers.parse.json) { request =>
+    dtoWithErrorHandlingSingle(Experiment.find(id.toInt), Ok)
   }
 
-  def delete(id: String) = Action.async(BodyParsers.parse.json) { request =>
-    Experiment.delete(id.toInt) match {
-      case Success(id) => Future { Ok(s"Experiment with id ${id.toString} was deleted") }
-      case Failure(t: PSQLException) => Future { BadRequest(Json.obj("error" -> s"Experiment could not be deleted")) }
-    }
+  def delete(id: String) = Action.async { request =>
+    anyWithErrorHandlingSingle(Experiment.delete(id.toInt), Ok)
   }
+
+  def update(id: String, row: Tables.Experiment#TableElementType) = Action.async { request =>
+    anyWithErrorHandlingSingle(Experiment.updateById(id.toInt, row), Ok)
+  }
+
 }

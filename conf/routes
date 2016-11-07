@@ -13,7 +13,6 @@ GET     /message                    controllers.AsyncController.message
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
 
 # Chirp API routes
-<<<<<<< cc11f2a7f7eeb4258668e7e42cc218927eda3110
 
 # Users and authentication
 PUT     /v1/user                    controllers.v1.UserController.create
@@ -21,6 +20,8 @@ GET     /v1/user/:id                controllers.v1.UserController.retrieve(id)
 DELETE  /v1/user/:id                controllers.v1.UserController.delete(id)
 POST    /v1/user/authenticate       controllers.v1.UserController.authenticate
 
-POST    /v1/experiment/create       controllers.v1.ExperimentController.create
+
+PUT     /v1/experiment/create       controllers.v1.ExperimentController.create
 GET     /v1/experiment/:id          controllers.v1.ExperimentController.retrieve(id)
 DELETE  /v1/experiment/:id          controllers.v1.ExperimentController.delete(id)
+POST    /v1/experiment/update       controllers.v1.ExperimentController.update

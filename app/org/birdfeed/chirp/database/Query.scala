@@ -22,8 +22,6 @@ import play.api.libs.json._
 
 import scala.util.Try
 
-sealed case class InjectedConfig @Inject()(dbConfigProvider: DatabaseConfigProvider)
-
 case class AuthenticationFailedException(message: String) extends Exception(message)
 case class QueryFailedException(message: String) extends Exception(message)
 
@@ -40,11 +38,6 @@ trait Query {
     def find(id: Int): Future[Try[Sample]] = {
       where(_.id === id).map(_.map(_.head))
     }
-  }
-
-  object Sample {
-    def find(id: Int): Future[Option[Sample]] = { where(_.id === id).map(_.map(_.headOption)).map(_.head) }
-
     /**
       * Filter Sample objects using Slick PG API query.
       * @param predicate Predicate for selection.
@@ -60,64 +53,64 @@ trait Query {
   }
 
   object Experiment {
-    def find(id: Int): Future[Option[Experiment]] = { where(_.id === id).map(_.map(_.headOption)).map(_.head) }
+    /**
+      * Find experiment by id
+      * @param id
+      * @return Experiment if found
+      */
+    def find(id: Int): Future[Try[Experiment]] = {
+      where(_.id === id).map(_.map(_.head))
+    }
 
-    def create(name: String, start_date: Date, end_date: Option[Date] = None): Future[Option[Experiment]] = {
+    /**
+      * Create an experiment
+      * @param name Name
+      * @param start_date Date experiment becomes active
+      * @param end_date Date experiment becomes inactive
+      * @return Created experiment
+      */
+    def create(name: String, start_date: Date, end_date: Option[Date] = None): Future[Try[Experiment]] = {
       val currentDate = new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime)
       dbConfig.db.run(
         Tables.Experiment returning Tables.Experiment.map(_.id) into (
           (experiment_row, id) => experiment_row.copy(id = id)
           ) += Tables.ExperimentRow(0, name, start_date, end_date, currentDate, currentDate)
       ).map((experiment_row: Tables.Experiment#TableElementType) => {
-        Option(new Experiment(experiment_row))
+        Try(new Experiment(dbConfigProvider)(experiment_row))
       })
     }
 
-    def delete(id: Int): Try[Future[Int]] = Try {
-      dbConfig.db.run(Tables.Experiment.filter(_.id === id).delete)
+    /**
+      * Delete an experiment
+      * @param id Id
+      * @return Number of database rows deleted
+      */
+    def delete(id: Int): Future[Try[Int]] = {
+      dbConfig.db.run(Tables.Experiment.filter(_.id === id).delete).map(Try(_))
     }
 
-    def updateById(id: Int, row: Tables.Experiment#TableElementType): Future[Int] = {
+    /**
+      * Update an experiment row
+      * @param id Id
+      * @param row Object containing experiment properties
+      * @return
+      */
+    def updateById(id: Int, row: Tables.Experiment#TableElementType): Future[Try[Int]] = {
       dbConfig.db.run(Tables.Experiment.filter(_.id === id)
         .update(Tables.ExperimentRow(row.id, row.name, row.startDate,
-          row.endDate, row.createdAt, new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime))))
+          row.endDate, row.createdAt, new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime)))).map(Try(_))
     }
 
-    def where(predicate: Tables.Experiment => Rep[Boolean]): Future[Option[Seq[Experiment]]] = {
-      dbConfig.db.run(Tables.Experiment.filter(predicate).result).map(
-        (rows: Seq[Tables.Experiment#TableElementType]) => {
-          Option(rows.map(new Experiment(_)))
-        }
-      )
-    }
-
-    class Experiment(var slickTE: Tables.Experiment#TableElementType) extends Tables.ExperimentRow(
-      slickTE.id, slickTE.name, slickTE.startDate, slickTE.endDate, slickTE.createdAt, slickTE.updatedAt
-    ) with Support[Tables.Experiment#TableElementType] {
-      implicit val jsonWrites: Writes[Experiment.Experiment] = Writes { user =>
-        Json.obj(
-          "id" -> id,
-          "name" -> name,
-          "startDate" -> startDate,
-          "endDate" -> endDate,
-          "createdAt" -> createdAt,
-          "updatedAt" -> updatedAt
-        )
-      }
-
-      def reload: Future[Option[Experiment]] = { find(slickTE.id) }
-
-      def remove: Try[Future[Int]] = { delete(slickTE.id) }
-
-      override def equals(rhs: Any): Boolean = {
-        if (rhs.getClass != this.getClass) { false }
-        else {
-          val cmp = rhs.asInstanceOf[this.type]
-          slickTE.id == cmp.slickTE.id &&
-          slickTE.name == cmp.slickTE.name &&
-          slickTE.startDate.toString == cmp.slickTE.startDate.toString &&
-          slickTE.endDate.toString == cmp.slickTE.endDate.toString
-        }
+    /**
+      * Filter Experiment objects using Slick PG API query.
+      * @param predicate Predicate for selection.
+      * @return Potentially a collection of Experiment objects.
+      */
+    def where(predicate: Tables.Experiment => Rep[Boolean]): Future[Try[Seq[Experiment]]] = {
+      dbConfig.db.run(Tables.Experiment.filter(predicate).result).map {
+        case rows: Seq[Tables.Experiment#TableElementType] => Success(rows.map(new Experiment(dbConfigProvider)(_)))
+        case error: Exception => Failure(error)
+        case _ => Failure(QueryFailedException("Query was unsuccessful."))
       }
     }
   }
