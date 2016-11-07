@@ -21,8 +21,10 @@ libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "9.4-1200-jdbc41",
   "com.typesafe.play" %% "play-slick" % "2.0.0",
   "com.typesafe.play" %% "play-slick" % "2.0.0",
-  "com.typesafe.play" %% "play-slick-evolutions" % "2.0.0"
+  "com.typesafe.play" %% "play-slick-evolutions" % "2.0.0",
 
+  // Swagger
+  "io.swagger" %% "swagger-play2" % "1.5.1"
 )
 
 // Evict the 9999999999 sideloaded SLF4J jars
@@ -33,6 +35,7 @@ generate_tables := {
   SlickTableGeneratorRunner.generate
 }
 
+// Use our special test environment HOCON
 javaOptions in Test += "-Dconfig.file=conf/application.test.conf"
 
 // If seed is empty, SBT will refuse to build. Use only locally!
