@@ -25,5 +25,6 @@ ALTER TABLE "chirp"."score"
   ON DELETE CASCADE;
 
 # --- !Downs
+SET SEARCH_PATH to "chirp";
 DROP TABLE "chirp"."user" CASCADE;
 DROP TYPE Role;

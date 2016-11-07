@@ -19,3 +19,9 @@ PUT     /v1/user                    controllers.v1.UserController.create
 GET     /v1/user/:id                controllers.v1.UserController.retrieve(id)
 DELETE  /v1/user/:id                controllers.v1.UserController.delete(id)
 POST    /v1/user/authenticate       controllers.v1.UserController.authenticate
+
+
+PUT     /v1/experiment/create       controllers.v1.ExperimentController.create
+GET     /v1/experiment/:id          controllers.v1.ExperimentController.retrieve(id)
+DELETE  /v1/experiment/:id          controllers.v1.ExperimentController.delete(id)
+POST    /v1/experiment/update       controllers.v1.ExperimentController.update
