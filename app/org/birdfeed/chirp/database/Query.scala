@@ -19,6 +19,22 @@ trait Query {
   val dbConfigProvider: DatabaseConfigProvider
   val dbConfig: DatabaseConfig[JdbcProfile]
 
+  object OAuthToken {
+    /**
+      * Filter OAuthScope objects using Slick PG API query.
+      * @param predicate Predicate for selection.
+      * @return Potentially a collection of User relations.
+      */
+    // Is this better?
+    def where(predicate: Tables.OauthAccessToken => Rep[Boolean]): Future[Try[Seq[OAuthToken]]] = {
+      dbConfig.db.run(Tables.OauthAccessToken.filter(predicate).result).map {
+        case rows: Seq[Tables.OauthAccessToken#TableElementType] => Success(rows.map(new OAuthToken(dbConfigProvider)(_)))
+        case error: Exception => Failure(error)
+        case _ => Failure(QueryFailedException("Query was unsuccessful."))
+      }
+    }
+  }
+
   object Sample {
     /**
       * Find Sample by ID.

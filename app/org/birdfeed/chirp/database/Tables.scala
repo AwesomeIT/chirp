@@ -14,7 +14,7 @@ trait Tables {
   import slick.jdbc.{GetResult => GR}
 
   /** DDL for all tables. Call .create to execute. */
-  lazy val schema: profile.SchemaDescription = Array(Experiment.schema, PlayEvolutions.schema, PlayEvolutionsLock.schema, Role.schema, Sample.schema, SampleExperiment.schema, Score.schema, User.schema).reduceLeft(_ ++ _)
+  lazy val schema: profile.SchemaDescription = Array(Experiment.schema, OauthAccessToken.schema, PlayEvolutions.schema, PlayEvolutionsLock.schema, Role.schema, Sample.schema, SampleExperiment.schema, Score.schema, User.schema).reduceLeft(_ ++ _)
   @deprecated("Use .schema instead of .ddl", "3.0")
   def ddl = schema
 
@@ -52,6 +52,49 @@ trait Tables {
   }
   /** Collection-like TableQuery object for table Experiment */
   lazy val Experiment = new TableQuery(tag => new Experiment(tag))
+
+  /** Entity class storing rows of table OauthAccessToken
+   *  @param id Database column id SqlType(serial), AutoInc, PrimaryKey
+   *  @param token Database column token SqlType(varchar), Length(36,true), Default(None)
+   *  @param refreshToken Database column refresh_token SqlType(varchar), Length(36,true), Default(None)
+   *  @param lifeSeconds Database column life_seconds SqlType(int8), Default(None)
+   *  @param roleId Database column role_id SqlType(int4), Default(None)
+   *  @param expired Database column expired SqlType(bool), Default(None) */
+  case class OauthAccessTokenRow(id: Int, token: Option[String] = None, refreshToken: Option[String] = None, lifeSeconds: Option[Long] = None, roleId: Option[Int] = None, expired: Option[Boolean] = None)
+  /** GetResult implicit for fetching OauthAccessTokenRow objects using plain SQL queries */
+  implicit def GetResultOauthAccessTokenRow(implicit e0: GR[Int], e1: GR[Option[String]], e2: GR[Option[Long]], e3: GR[Option[Int]], e4: GR[Option[Boolean]]): GR[OauthAccessTokenRow] = GR{
+    prs => import prs._
+    OauthAccessTokenRow.tupled((<<[Int], <<?[String], <<?[String], <<?[Long], <<?[Int], <<?[Boolean]))
+  }
+  /** Table description of table oauth_access_token. Objects of this class serve as prototypes for rows in queries. */
+  class OauthAccessToken(_tableTag: Tag) extends Table[OauthAccessTokenRow](_tableTag, Some("chirp"), "oauth_access_token") {
+    def * = (id, token, refreshToken, lifeSeconds, roleId, expired) <> (OauthAccessTokenRow.tupled, OauthAccessTokenRow.unapply)
+    /** Maps whole row to an option. Useful for outer joins. */
+    def ? = (Rep.Some(id), token, refreshToken, lifeSeconds, roleId, expired).shaped.<>({r=>import r._; _1.map(_=> OauthAccessTokenRow.tupled((_1.get, _2, _3, _4, _5, _6)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+
+    /** Database column id SqlType(serial), AutoInc, PrimaryKey */
+    val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
+    /** Database column token SqlType(varchar), Length(36,true), Default(None) */
+    val token: Rep[Option[String]] = column[Option[String]]("token", O.Length(36,varying=true), O.Default(None))
+    /** Database column refresh_token SqlType(varchar), Length(36,true), Default(None) */
+    val refreshToken: Rep[Option[String]] = column[Option[String]]("refresh_token", O.Length(36,varying=true), O.Default(None))
+    /** Database column life_seconds SqlType(int8), Default(None) */
+    val lifeSeconds: Rep[Option[Long]] = column[Option[Long]]("life_seconds", O.Default(None))
+    /** Database column role_id SqlType(int4), Default(None) */
+    val roleId: Rep[Option[Int]] = column[Option[Int]]("role_id", O.Default(None))
+    /** Database column expired SqlType(bool), Default(None) */
+    val expired: Rep[Option[Boolean]] = column[Option[Boolean]]("expired", O.Default(None))
+
+    /** Foreign key referencing Role (database name oauth_access_token_role_id_fkey) */
+    lazy val roleFk = foreignKey("oauth_access_token_role_id_fkey", roleId, Role)(r => Rep.Some(r.id), onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
+
+    /** Uniqueness Index over (refreshToken) (database name index_oauth_access_token_refresh_token) */
+    val index1 = index("index_oauth_access_token_refresh_token", refreshToken, unique=true)
+    /** Uniqueness Index over (token) (database name index_oauth_access_token_token) */
+    val index2 = index("index_oauth_access_token_token", token, unique=true)
+  }
+  /** Collection-like TableQuery object for table OauthAccessToken */
+  lazy val OauthAccessToken = new TableQuery(tag => new OauthAccessToken(tag))
 
   /** Entity class storing rows of table PlayEvolutions
    *  @param id Database column id SqlType(int4), PrimaryKey
@@ -271,6 +314,9 @@ trait Tables {
 
     /** Foreign key referencing Role (database name user_role_fk) */
     lazy val roleFk = foreignKey("user_role_fk", roleId, Role)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.Restrict)
+
+    /** Uniqueness Index over (email) (database name index_user_email) */
+    val index1 = index("index_user_email", email, unique=true)
   }
   /** Collection-like TableQuery object for table User */
   lazy val User = new TableQuery(tag => new User(tag))
