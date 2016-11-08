@@ -89,9 +89,9 @@ class QuerySpec extends WordSpec with MustMatchers with OneServerPerSuite with Q
     }
 
     "not be deletable if it has associations" in {
-      evaluating {
+      a [PSQLException] must be thrownBy {
         Await.result(Sample.delete(created.id), Duration.Inf)
-      } must produce[PSQLException]
+      }
     }
   }
 

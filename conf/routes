@@ -20,8 +20,13 @@ GET     /v1/user/:id                controllers.v1.UserController.retrieve(id)
 DELETE  /v1/user/:id                controllers.v1.UserController.delete(id)
 POST    /v1/user/authenticate       controllers.v1.UserController.authenticate
 
-
+# Experiments
 PUT     /v1/experiment/create       controllers.v1.ExperimentController.create
 GET     /v1/experiment/:id          controllers.v1.ExperimentController.retrieve(id)
 DELETE  /v1/experiment/:id          controllers.v1.ExperimentController.delete(id)
 #POST    /v1/experiment/:id          controllers.v1.ExperimentController.update(id, _)
+
+# Samples
+PUT     /v1/sample                  controllers.v1.SampleController.create
+GET     /v1/sample/:id              controllers.v1.SampleController.retrieve(id)
+DELETE  /v1/sample/:id              controllers.v1.SampleController.delete(id)

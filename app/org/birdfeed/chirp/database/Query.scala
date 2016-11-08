@@ -38,7 +38,6 @@ trait Query {
     def where(predicate: Tables.Sample => Rep[Boolean]): Future[Try[Seq[Sample]]] = {
       dbConfig.db.run(Tables.Sample.filter(predicate).result).map {
         case rows: Seq[Tables.Sample#TableElementType] => Success(rows.map(new Sample(dbConfigProvider)(_)))
-        case error: Exception => Failure(error)
         case _ => Failure(QueryFailedException("Query was unsuccessful."))
       }
     }
@@ -134,7 +133,6 @@ trait Query {
     def where(predicate: Tables.Experiment => Rep[Boolean]): Future[Try[Seq[Experiment]]] = {
       dbConfig.db.run(Tables.Experiment.filter(predicate).result).map {
         case rows: Seq[Tables.Experiment#TableElementType] => Success(rows.map(new Experiment(dbConfigProvider)(_)))
-        case error: Exception => Failure(error)
         case _ => Failure(QueryFailedException("Query was unsuccessful."))
       }
     }
@@ -185,7 +183,6 @@ trait Query {
     def where(predicate: Tables.SampleExperiment => Rep[Boolean]): Future[Try[Seq[SampleExperiment]]] = {
       dbConfig.db.run(Tables.SampleExperiment.filter(predicate).result).map {
         case rows: Seq[Tables.SampleExperiment#TableElementType] => Success(rows.map(new SampleExperiment(dbConfigProvider)(_)))
-        case error: Exception => Failure(error)
         case _ => Failure(QueryFailedException("Query was unsuccessful."))
       }
     }
@@ -219,7 +216,6 @@ trait Query {
     def where(predicate: Tables.User => Rep[Boolean]): Future[Try[Seq[User]]] = {
       dbConfig.db.run(Tables.User.filter(predicate).result).map {
         case rows: Seq[Tables.User#TableElementType] => Success(rows.map(new User(dbConfigProvider)(_)))
-        case error: Exception => Failure(error)
         case _ => Failure(QueryFailedException("Query was unsuccessful."))
       }
     }
