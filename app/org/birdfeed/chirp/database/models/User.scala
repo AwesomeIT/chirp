@@ -27,7 +27,7 @@ class User @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: 
       "id" -> id,
       "name" -> name,
       "email" -> email,
-      "roleId" -> roleId
+      "role_id" -> roleId
     )
   }
 

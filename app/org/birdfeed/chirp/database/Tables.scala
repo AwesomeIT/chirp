@@ -206,36 +206,38 @@ trait Tables {
   /** Entity class storing rows of table Score
    *  @param id Database column id SqlType(serial), AutoInc, PrimaryKey
    *  @param score Database column score SqlType(numeric)
-   *  @param sampleExperimentId Database column sample_experiment_id SqlType(int4)
-   *  @param userId Database column user_id SqlType(int4) */
-  case class ScoreRow(id: Int, score: scala.math.BigDecimal, sampleExperimentId: Int, userId: Int)
+   *  @param userId Database column user_id SqlType(int4)
+   *  @param sampleId Database column sample_id SqlType(int4)
+   *  @param experimentId Database column experiment_id SqlType(int4) */
+  case class ScoreRow(id: Int, score: scala.math.BigDecimal, userId: Int, sampleId: Int, experimentId: Int)
   /** GetResult implicit for fetching ScoreRow objects using plain SQL queries */
   implicit def GetResultScoreRow(implicit e0: GR[Int], e1: GR[scala.math.BigDecimal]): GR[ScoreRow] = GR{
     prs => import prs._
-    ScoreRow.tupled((<<[Int], <<[scala.math.BigDecimal], <<[Int], <<[Int]))
+    ScoreRow.tupled((<<[Int], <<[scala.math.BigDecimal], <<[Int], <<[Int], <<[Int]))
   }
   /** Table description of table score. Objects of this class serve as prototypes for rows in queries. */
   class Score(_tableTag: Tag) extends Table[ScoreRow](_tableTag, Some("chirp"), "score") {
-    def * = (id, score, sampleExperimentId, userId) <> (ScoreRow.tupled, ScoreRow.unapply)
+    def * = (id, score, userId, sampleId, experimentId) <> (ScoreRow.tupled, ScoreRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(id), Rep.Some(score), Rep.Some(sampleExperimentId), Rep.Some(userId)).shaped.<>({r=>import r._; _1.map(_=> ScoreRow.tupled((_1.get, _2.get, _3.get, _4.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(id), Rep.Some(score), Rep.Some(userId), Rep.Some(sampleId), Rep.Some(experimentId)).shaped.<>({r=>import r._; _1.map(_=> ScoreRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(serial), AutoInc, PrimaryKey */
     val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
     /** Database column score SqlType(numeric) */
     val score: Rep[scala.math.BigDecimal] = column[scala.math.BigDecimal]("score")
-    /** Database column sample_experiment_id SqlType(int4) */
-    val sampleExperimentId: Rep[Int] = column[Int]("sample_experiment_id")
     /** Database column user_id SqlType(int4) */
     val userId: Rep[Int] = column[Int]("user_id")
+    /** Database column sample_id SqlType(int4) */
+    val sampleId: Rep[Int] = column[Int]("sample_id")
+    /** Database column experiment_id SqlType(int4) */
+    val experimentId: Rep[Int] = column[Int]("experiment_id")
 
-    /** Foreign key referencing SampleExperiment (database name score_sample_experiment_id_fkey) */
-    lazy val sampleExperimentFk = foreignKey("score_sample_experiment_id_fkey", sampleExperimentId, SampleExperiment)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
+    /** Foreign key referencing Experiment (database name score_experiment_id_fkey) */
+    lazy val experimentFk = foreignKey("score_experiment_id_fkey", experimentId, Experiment)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
+    /** Foreign key referencing Sample (database name score_sample_id_fkey) */
+    lazy val sampleFk = foreignKey("score_sample_id_fkey", sampleId, Sample)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
     /** Foreign key referencing User (database name score_user_fk) */
     lazy val userFk = foreignKey("score_user_fk", userId, User)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.Cascade)
-
-    /** Index over (id,sampleExperimentId) (database name index_score_sample_experiment) */
-    val index1 = index("index_score_sample_experiment", (id, sampleExperimentId))
   }
   /** Collection-like TableQuery object for table Score */
   lazy val Score = new TableQuery(tag => new Score(tag))
@@ -272,8 +274,8 @@ trait Tables {
     /** Foreign key referencing Role (database name user_role_fk) */
     lazy val roleFk = foreignKey("user_role_fk", roleId, Role)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.Restrict)
 
-    /** Index over (id,email) (database name index_user_id_email) */
-    val index1 = index("index_user_id_email", (id, email))
+    /** Uniqueness Index over (email) (database name index_user_email) */
+    val index1 = index("index_user_email", email, unique=true)
   }
   /** Collection-like TableQuery object for table User */
   lazy val User = new TableQuery(tag => new User(tag))
