@@ -21,7 +21,10 @@ libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "9.4-1200-jdbc41",
   "com.typesafe.play" %% "play-slick" % "2.0.0",
   "com.typesafe.play" %% "play-slick" % "2.0.0",
-  "com.typesafe.play" %% "play-slick-evolutions" % "2.0.0"
+  "com.typesafe.play" %% "play-slick-evolutions" % "2.0.0",
+
+  // Joda Time Wrapper
+  "com.github.nscala-time" %% "nscala-time" % "2.14.0"
 
 )
 

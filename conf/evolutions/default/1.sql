@@ -39,3 +39,4 @@ CREATE TABLE "chirp"."score" (
 
 # --- !Downs
 DROP SCHEMA "chirp" CASCADE;
+CREATE SCHEMA "chirp";
