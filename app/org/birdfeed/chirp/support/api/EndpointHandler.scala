@@ -1,18 +1,18 @@
-package org.birdfeed.chirp.helpers
+package org.birdfeed.chirp.support.api
 
-import scala.util._
-import scala.concurrent._
-import play.api.mvc._
-import play.api.mvc.Results._
-import play.api.libs.json._
 import org.birdfeed.chirp.database.{AuthenticationFailedException, Relation}
 import org.postgresql.util.PSQLException
 import play.api.data.validation.ValidationError
+import play.api.libs.json._
+import play.api.mvc.Results._
+import play.api.mvc._
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.util._
 
 trait EndpointHandler {
-  def jsonError(message: String, exception: Exception): JsValue = {
+  def jsonError(message: String, exception: Exception = new Exception): JsValue = {
     Json.obj(
       "error" -> message,
       "details" -> Json.obj(
