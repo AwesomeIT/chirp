@@ -30,3 +30,7 @@ DELETE  /v1/experiment/:id          controllers.v1.ExperimentController.delete(i
 PUT     /v1/sample                  controllers.v1.SampleController.create
 GET     /v1/sample/:id              controllers.v1.SampleController.retrieve(id)
 DELETE  /v1/sample/:id              controllers.v1.SampleController.delete(id)
+
+#Scores
+PUT     /v1/score/create            controllers.v1.CreateController.create
+GET     /v1/score/:id               controllers.v1.CreateController.retrieve(id)

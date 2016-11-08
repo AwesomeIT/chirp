@@ -27,8 +27,8 @@ class ExperimentController @Inject() (actorSystem: ActorSystem, val dbConfigProv
   def create = Action.async(BodyParsers.parse.json) { request =>
     val createReads: Reads[Future[Try[Experiment]]] = (
       (JsPath \ "name").read[String] and
-        (JsPath \ "startDate").read[String] and
-        (JsPath \ "endDate").readNullable[String]
+        (JsPath \ "start_date").read[String] and
+        (JsPath \ "end_date").readNullable[String]
       ) ((name: String, startDate: String, endDate: Option[String]) => {
       val format = new SimpleDateFormat("MMddYYYY")
       val sqlStartDate = new java.sql.Date(format.parse(startDate).getTime)

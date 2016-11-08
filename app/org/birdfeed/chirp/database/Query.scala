@@ -1,7 +1,6 @@
 package org.birdfeed.chirp.database
 
 import java.sql.Date
-
 import com.github.t3hnar.bcrypt._
 import org.birdfeed.chirp.database.models._
 import org.joda.time.DateTime
@@ -13,6 +12,13 @@ import slick.driver.PostgresDriver.api._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.util.{Try, _}
+import scala.util._
+import org.birdfeed.chirp.database.models._
+import slick.backend.DatabaseConfig
+
+import play.api.db.slick.DatabaseConfigProvider
+
+import scala.util.Try
 
 case class AuthenticationFailedException(message: String) extends Exception(message)
 case class QueryFailedException(message: String) extends Exception(message)
@@ -20,6 +26,39 @@ case class QueryFailedException(message: String) extends Exception(message)
 trait Query {
   val dbConfigProvider: DatabaseConfigProvider
   val dbConfig: DatabaseConfig[JdbcProfile]
+
+  object Score {
+    /**
+      * Find Score by ID.
+      * @param id ID
+      * @return Potentially a Score relation.
+      */
+    def find(id: Int): Future[Try[Score]] = {
+      where(_.id === id).map(_.map(_.head))
+    }
+    /**
+      * Filter Score objects using Slick PG API query.
+      * @param predicate Predicate for selection.
+      * @return Potentially a collection of Score relations.
+      */
+    def where(predicate: Tables.Score => Rep[Boolean]): Future[Try[Seq[Score]]] = {
+      dbConfig.db.run(Tables.Score.filter(predicate).result).map(
+        (rows: Seq[Tables.Score#TableElementType]) => {
+          Try(rows.map(new Score(dbConfigProvider)(_)))
+        }
+      )
+    }
+
+    def create(score: Int, sampleId: Int, experimentId: Int, userId: Int): Future[Try[Score]] = {
+      dbConfig.db.run(
+        Tables.Score returning Tables.Score.map(_.id) into (
+          (score_row, id) => score_row.copy(id = id)
+          ) += Tables.ScoreRow(0, score, userId, sampleId, experimentId)
+      ).map((score_row: Tables.Score#TableElementType) => {
+        Try(new Score(dbConfigProvider)(score_row))
+      })
+    }
+  }
 
   object Sample {
     /**
