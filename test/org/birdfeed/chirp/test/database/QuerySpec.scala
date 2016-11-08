@@ -1,16 +1,17 @@
 package org.birdfeed.chirp.test.database
 
+import org.birdfeed.chirp.database.{Query, Tables}
+import org.joda.time.DateTime
+import org.postgresql.util.PSQLException
 import org.scalatest._
 import org.scalatestplus.play._
-
-import scala.concurrent.duration.Duration
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
-import org.birdfeed.chirp.database.models.Experiment
+import slick.driver.PostgresDriver.api._
 
 import scala.concurrent._
-import scala.util.{Random, Try}
-import org.birdfeed.chirp.database.{Query, Tables}
+import scala.concurrent.duration.Duration
+import scala.util.Random
 
 class QuerySpec extends WordSpec with MustMatchers with OneServerPerSuite with Query {
   // This is what happens when your framework is written caring more about
@@ -55,6 +56,42 @@ class QuerySpec extends WordSpec with MustMatchers with OneServerPerSuite with Q
             current_email, current_password
         ), Duration.Inf).get
       )
+    }
+  }
+
+  "Samples" should {
+    val experiment = Await.result(
+      Experiment.create(
+        java.util.UUID.randomUUID.toString, new java.sql.Date(DateTime.now.getMillis),
+        Some(new java.sql.Date(DateTime.now.getMillis))), Duration.Inf).get
+
+    val uuid = java.util.UUID.randomUUID.toString
+    val user = Await.result(User.create(
+      java.util.UUID.randomUUID.toString, s"${uuid}@uuid.com", uuid, 1
+    ), Duration.Inf).get
+
+    val created = Await.result(Sample.create(
+      "test", user.id, "moo.wav"
+    ), Duration.Inf).get
+
+    "be creatable and retrievable" in {
+      val retrieved = Await.result(Sample.find(created.id), Duration.Inf).get
+      created must equal(retrieved)
+    }
+
+    "be associatable with experiment" in {
+      experiment << created
+      val retrievedPivot = Await.result(
+        SampleExperiment.where(_.sampleId === created.id), Duration.Inf
+      ).get
+
+      retrievedPivot.head.experimentId must equal(experiment.id)
+    }
+
+    "not be deletable if it has associations" in {
+      evaluating {
+        Await.result(Sample.delete(created.id), Duration.Inf)
+      } must produce[PSQLException]
     }
   }
 

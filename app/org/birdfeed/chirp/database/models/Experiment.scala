@@ -6,6 +6,7 @@ import org.birdfeed.chirp.database.models._
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.PostgresDriver.api._
 import play.api.libs.json.{Json, Writes}
+import slick.driver.JdbcProfile
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -17,7 +18,9 @@ import scala.util.Try
   */
 class Experiment @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.Experiment#TableElementType) extends Tables.ExperimentRow(
   slickTE.id, slickTE.name, slickTE.startDate, slickTE.endDate, slickTE.createdAt, slickTE.updatedAt
-) with Relation {
+) with Relation with org.birdfeed.chirp.database.Query {
+
+  val dbConfig = dbConfigProvider.get[JdbcProfile]
 
   override def equals(rhs: Any): Boolean = {
     if (rhs.getClass != this.getClass) { false }
@@ -28,6 +31,10 @@ class Experiment @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val sli
         slickTE.startDate.toString == cmp.slickTE.startDate.toString &&
         slickTE.endDate.toString == cmp.slickTE.endDate.toString
     }
+  }
+
+  def <<(sample: Sample): Future[Try[SampleExperiment]] = {
+    SampleExperiment.create(sample.id, id)
   }
 
   // TODO: Fill this in!
