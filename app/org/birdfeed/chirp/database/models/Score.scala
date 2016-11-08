@@ -15,6 +15,19 @@ class Score @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE:
   slickTE.id, slickTE.score, slickTE.sampleId, slickTE.experimentId, slickTE.userId
 ) with Relation with Query {
 
+  /* Will fail without override, score is a decimal in the db and a BigDecimal in the object */
+  override def equals(rhs: Any): Boolean = {
+    if (rhs.getClass != this.getClass) { false }
+    else {
+      val cmp = rhs.asInstanceOf[this.type]
+      slickTE.id == cmp.slickTE.id &&
+        slickTE.score == cmp.slickTE.score &&
+        slickTE.sampleId == cmp.slickTE.sampleId &&
+        slickTE.experimentId == cmp.slickTE.experimentId &&
+        slickTE.userId == cmp.slickTE.userId
+    }
+  }
+
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 
   // TODO: Fill this in!

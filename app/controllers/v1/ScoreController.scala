@@ -22,18 +22,18 @@ class ScoreController @Inject()(actorSystem: ActorSystem, val dbConfigProvider: 
 
   def create = Action.async(BodyParsers.parse.json) { request =>
     val createReads: Reads[Future[Try[Score]]] = (
-      (JsPath \ "score").read[Int] and
+      (JsPath \ "score").read[BigDecimal] and
         (JsPath \ "sample_id").read[Int] and
         (JsPath \ "experiment_id").read[Int] and
         (JsPath \ "user_id").read[Int]
-      )((score: Int, sampleId: Int, experimentId: Int, userId: Int) => {
+      )((score: BigDecimal, sampleId: Int, experimentId: Int, userId: Int) => {
       Score.create(score, sampleId, experimentId, userId)
     })
 
     dtoWithMarshallingSingle(createReads, request.body, Created)
   }
 
-  def retrieve(id: String) = Action.async(BodyParsers.parse.json) { request =>
+  def retrieve(id: String) = Action.async { request =>
     dtoWithErrorHandlingSingle(Score.find(id.toInt), Ok)
   }
 }

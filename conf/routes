@@ -32,5 +32,5 @@ GET     /v1/sample/:id              controllers.v1.SampleController.retrieve(id)
 DELETE  /v1/sample/:id              controllers.v1.SampleController.delete(id)
 
 #Scores
-PUT     /v1/score/create            controllers.v1.CreateController.create
-GET     /v1/score/:id               controllers.v1.CreateController.retrieve(id)
+PUT     /v1/score                   controllers.v1.ScoreController.create
+GET     /v1/score/:id               controllers.v1.ScoreController.retrieve(id)

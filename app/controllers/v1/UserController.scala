@@ -43,7 +43,7 @@ class UserController @Inject()(actorSystem: ActorSystem, val dbConfigProvider: D
     dtoWithMarshallingSingle(createReads, request.body, Created)
   }
 
-  def retrieve(id: String) = Action.async(BodyParsers.parse.json) { request =>
+  def retrieve(id: String) = Action.async { request =>
     dtoWithErrorHandlingSingle(User.find(id.toInt), Ok)
   }
 

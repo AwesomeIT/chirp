@@ -49,7 +49,7 @@ trait Query {
       )
     }
 
-    def create(score: Int, sampleId: Int, experimentId: Int, userId: Int): Future[Try[Score]] = {
+    def create(score: BigDecimal, sampleId: Int, experimentId: Int, userId: Int): Future[Try[Score]] = {
       dbConfig.db.run(
         Tables.Score returning Tables.Score.map(_.id) into (
           (score_row, id) => score_row.copy(id = id)
