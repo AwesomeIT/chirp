@@ -20,13 +20,16 @@ class SampleController @Inject()(actorSystem: ActorSystem, val dbConfigProvider:
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 
   def create(fileName: String, userId: Int) = Action.async(parse.raw) { request =>
-    request.body.asBytes(2048) match {
+    request.body.asBytes(request.body.size) match {
       case Some(bytes) => {
+        val meta = new ObjectMetadata
+        meta.setContentLength(request.body.size)
+
         dtoWithErrorHandlingSingle(
           Sample.create(
             fileName,
             userId,
-            bucket.putObject(fileName, bytes.toArray, new ObjectMetadata).key
+            bucket.putObject(fileName, bytes.toArray, meta).key
           ), Created)
       }
       case None => Future(InternalServerError(jsonError("S3 file upload failed. Please try again")))
