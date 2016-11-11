@@ -25,6 +25,7 @@ database:
 
 test:
   override:
+    - rm -rf .env
     - sbt clean coverage test
     - sbt coverageReport
     - sbt coverageAggregate
