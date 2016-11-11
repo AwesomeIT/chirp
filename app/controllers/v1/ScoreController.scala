@@ -9,7 +9,7 @@ import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import org.birdfeed.chirp.database.{Query, Relation}
 import org.birdfeed.chirp.database.models.{Score, User}
-import org.birdfeed.chirp.helpers.EndpointHandler
+import org.birdfeed.chirp.support.api.EndpointHandler
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
 
