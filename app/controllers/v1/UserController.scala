@@ -9,7 +9,7 @@ import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import org.birdfeed.chirp.database.{Query, Relation}
 import org.birdfeed.chirp.database.models.User
-import org.birdfeed.chirp.helpers.EndpointHandler
+import org.birdfeed.chirp.support.api.EndpointHandler
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
 
@@ -43,7 +43,7 @@ class UserController @Inject()(actorSystem: ActorSystem, val dbConfigProvider: D
     dtoWithMarshallingSingle(createReads, request.body, Created)
   }
 
-  def retrieve(id: String) = Action.async(BodyParsers.parse.json) { request =>
+  def retrieve(id: String) = Action.async { request =>
     dtoWithErrorHandlingSingle(User.find(id.toInt), Ok)
   }
 

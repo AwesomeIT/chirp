@@ -7,11 +7,18 @@ scalaVersion := "2.11.7"
 
 fork in run := true
 
+resolvers += Resolver.bintrayRepo("jeremyrsmith", "maven")
+
 libraryDependencies ++= Seq(
   evolutions,
   cache,
   ws,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test,
+  //  Deprecated but there for warm fuzzies
+  //  "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test,
+
+  // Thank you @wsargent: https://github.com/playframework/scalatestplus-play/issues/55#issuecomment-259208681
+  "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test,
+  "io.github.jeremyrsmith" %% "scalamock-scalatest-support" % "3.0.0" % Test,
 
   // Auth
   "com.github.t3hnar" %% "scala-bcrypt" % "2.6",
@@ -24,8 +31,10 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-slick-evolutions" % "2.0.0",
 
   // Joda Time Wrapper
-  "com.github.nscala-time" %% "nscala-time" % "2.14.0"
+  "com.github.nscala-time" %% "nscala-time" % "2.14.0",
 
+  // AWS
+  "com.github.seratch" %% "awscala" % "0.5.+"
 )
 
 // Evict the 9999999999 sideloaded SLF4J jars

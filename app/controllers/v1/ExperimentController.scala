@@ -10,7 +10,7 @@ import scala.concurrent._
 import akka.actor.ActorSystem
 import org.birdfeed.chirp.database.{Query, Tables}
 import org.birdfeed.chirp.database.models.Experiment
-import org.birdfeed.chirp.helpers.EndpointHandler
+import org.birdfeed.chirp.support.api.EndpointHandler
 import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
@@ -27,8 +27,8 @@ class ExperimentController @Inject() (actorSystem: ActorSystem, val dbConfigProv
   def create = Action.async(BodyParsers.parse.json) { request =>
     val createReads: Reads[Future[Try[Experiment]]] = (
       (JsPath \ "name").read[String] and
-        (JsPath \ "startDate").read[String] and
-        (JsPath \ "endDate").readNullable[String]
+        (JsPath \ "start_date").read[String] and
+        (JsPath \ "end_date").readNullable[String]
       ) ((name: String, startDate: String, endDate: Option[String]) => {
       val format = new SimpleDateFormat("MMddYYYY")
       val sqlStartDate = new java.sql.Date(format.parse(startDate).getTime)
