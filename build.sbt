@@ -17,8 +17,9 @@ libraryDependencies ++= Seq(
   //  "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test,
 
   // Thank you @wsargent: https://github.com/playframework/scalatestplus-play/issues/55#issuecomment-259208681
-  "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test,
-  "io.github.jeremyrsmith" %% "scalamock-scalatest-support" % "3.0.0" % Test,
+  "org.scalatest" %% "scalatest" % "3.0.0",
+  "org.scalatestplus.play" % "scalatestplus-play_2.11" % "2.0.0-M1",
+  "io.github.jeremyrsmith" %% "scalamock-scalatest-support" % "3.0.0",
 
   // Auth
   "com.github.t3hnar" %% "scala-bcrypt" % "2.6",
