@@ -83,9 +83,9 @@ class QuerySpec extends WordSpec with MustMatchers with OneServerPerSuite with Q
       experiment << created
       val retrievedPivot = Await.result(
         SampleExperiment.where(_.sampleId === created.id), Duration.Inf
-      ).get
+      )
 
-      retrievedPivot.head.experimentId must equal(experiment.id)
+      retrievedPivot.get.headOption.get.experimentId must equal(experiment.id)
     }
 
     "not be deletable if it has associations" in {
