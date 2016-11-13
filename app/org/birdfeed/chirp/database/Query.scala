@@ -27,6 +27,39 @@ trait Query {
   val dbConfigProvider: DatabaseConfigProvider
   val dbConfig: DatabaseConfig[JdbcProfile]
 
+  object RolePermission {
+    def find(id: Int): Future[Try[RolePermission]] = { where(_.id === id).map(_.map(_.head)) }
+    def where(predicate: Tables.RolePermission => Rep[Boolean]): Future[Try[Seq[RolePermission]]] = {
+      dbConfig.db.run(Tables.RolePermission.filter(predicate).result).map(
+        (rows: Seq[Tables.RolePermission#TableElementType]) => {
+          Try(rows.map(new RolePermission(dbConfigProvider)(_)))
+        }
+      )
+    }
+  }
+
+  object Permission {
+    def find(id: Int): Future[Try[Permission]] = { where(_.id === id).map(_.map(_.head)) }
+    def where(predicate: Tables.Permission => Rep[Boolean]): Future[Try[Seq[Permission]]] = {
+      dbConfig.db.run(Tables.Permission.filter(predicate).result).map(
+        (rows: Seq[Tables.Permission#TableElementType]) => {
+          Try(rows.map(new Permission(dbConfigProvider)(_)))
+        }
+      )
+    }
+  }
+
+  object Role {
+    def find(id: Int): Future[Try[Role]] = { where(_.id === id).map(_.map(_.head)) }
+    def where(predicate: Tables.Role => Rep[Boolean]): Future[Try[Seq[Role]]] = {
+      dbConfig.db.run(Tables.Role.filter(predicate).result).map(
+        (rows: Seq[Tables.Role#TableElementType]) => {
+          Try(rows.map(new Role(dbConfigProvider)(_)))
+        }
+      )
+    }
+  }
+
   object Score {
     /**
       * Find Score by ID.

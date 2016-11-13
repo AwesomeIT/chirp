@@ -14,7 +14,7 @@ trait Tables {
   import slick.jdbc.{GetResult => GR}
 
   /** DDL for all tables. Call .create to execute. */
-  lazy val schema: profile.SchemaDescription = Array(Experiment.schema, PlayEvolutions.schema, PlayEvolutionsLock.schema, Role.schema, Sample.schema, SampleExperiment.schema, Score.schema, User.schema).reduceLeft(_ ++ _)
+  lazy val schema: profile.SchemaDescription = Array(Experiment.schema, Permission.schema, PlayEvolutions.schema, PlayEvolutionsLock.schema, Role.schema, RolePermission.schema, Sample.schema, SampleExperiment.schema, Score.schema, User.schema).reduceLeft(_ ++ _)
   @deprecated("Use .schema instead of .ddl", "3.0")
   def ddl = schema
 
@@ -52,6 +52,32 @@ trait Tables {
   }
   /** Collection-like TableQuery object for table Experiment */
   lazy val Experiment = new TableQuery(tag => new Experiment(tag))
+
+  /** Entity class storing rows of table Permission
+   *  @param id Database column id SqlType(serial), AutoInc, PrimaryKey
+   *  @param name Database column name SqlType(varchar), Length(255,true) */
+  case class PermissionRow(id: Int, name: String)
+  /** GetResult implicit for fetching PermissionRow objects using plain SQL queries */
+  implicit def GetResultPermissionRow(implicit e0: GR[Int], e1: GR[String]): GR[PermissionRow] = GR{
+    prs => import prs._
+    PermissionRow.tupled((<<[Int], <<[String]))
+  }
+  /** Table description of table permission. Objects of this class serve as prototypes for rows in queries. */
+  class Permission(_tableTag: Tag) extends Table[PermissionRow](_tableTag, Some("chirp"), "permission") {
+    def * = (id, name) <> (PermissionRow.tupled, PermissionRow.unapply)
+    /** Maps whole row to an option. Useful for outer joins. */
+    def ? = (Rep.Some(id), Rep.Some(name)).shaped.<>({r=>import r._; _1.map(_=> PermissionRow.tupled((_1.get, _2.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+
+    /** Database column id SqlType(serial), AutoInc, PrimaryKey */
+    val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
+    /** Database column name SqlType(varchar), Length(255,true) */
+    val name: Rep[String] = column[String]("name", O.Length(255,varying=true))
+
+    /** Uniqueness Index over (name) (database name index_permission_name) */
+    val index1 = index("index_permission_name", name, unique=true)
+  }
+  /** Collection-like TableQuery object for table Permission */
+  lazy val Permission = new TableQuery(tag => new Permission(tag))
 
   /** Entity class storing rows of table PlayEvolutions
    *  @param id Database column id SqlType(int4), PrimaryKey
@@ -133,6 +159,40 @@ trait Tables {
   }
   /** Collection-like TableQuery object for table Role */
   lazy val Role = new TableQuery(tag => new Role(tag))
+
+  /** Entity class storing rows of table RolePermission
+   *  @param id Database column id SqlType(serial), AutoInc, PrimaryKey
+   *  @param roleId Database column role_id SqlType(int4)
+   *  @param permissionId Database column permission_id SqlType(int4) */
+  case class RolePermissionRow(id: Int, roleId: Int, permissionId: Int)
+  /** GetResult implicit for fetching RolePermissionRow objects using plain SQL queries */
+  implicit def GetResultRolePermissionRow(implicit e0: GR[Int]): GR[RolePermissionRow] = GR{
+    prs => import prs._
+    RolePermissionRow.tupled((<<[Int], <<[Int], <<[Int]))
+  }
+  /** Table description of table role_permission. Objects of this class serve as prototypes for rows in queries. */
+  class RolePermission(_tableTag: Tag) extends Table[RolePermissionRow](_tableTag, Some("chirp"), "role_permission") {
+    def * = (id, roleId, permissionId) <> (RolePermissionRow.tupled, RolePermissionRow.unapply)
+    /** Maps whole row to an option. Useful for outer joins. */
+    def ? = (Rep.Some(id), Rep.Some(roleId), Rep.Some(permissionId)).shaped.<>({r=>import r._; _1.map(_=> RolePermissionRow.tupled((_1.get, _2.get, _3.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+
+    /** Database column id SqlType(serial), AutoInc, PrimaryKey */
+    val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
+    /** Database column role_id SqlType(int4) */
+    val roleId: Rep[Int] = column[Int]("role_id")
+    /** Database column permission_id SqlType(int4) */
+    val permissionId: Rep[Int] = column[Int]("permission_id")
+
+    /** Foreign key referencing Permission (database name role_permission_permission_id_fkey) */
+    lazy val permissionFk = foreignKey("role_permission_permission_id_fkey", permissionId, Permission)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
+    /** Foreign key referencing Role (database name role_permission_role_id_fkey) */
+    lazy val roleFk = foreignKey("role_permission_role_id_fkey", roleId, Role)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
+
+    /** Uniqueness Index over (roleId,permissionId) (database name index_role_permission_role_id_permission_id) */
+    val index1 = index("index_role_permission_role_id_permission_id", (roleId, permissionId), unique=true)
+  }
+  /** Collection-like TableQuery object for table RolePermission */
+  lazy val RolePermission = new TableQuery(tag => new RolePermission(tag))
 
   /** Entity class storing rows of table Sample
    *  @param id Database column id SqlType(serial), AutoInc, PrimaryKey
