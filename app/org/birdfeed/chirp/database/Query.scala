@@ -1,6 +1,7 @@
 package org.birdfeed.chirp.database
 
 import java.sql.Date
+
 import com.github.t3hnar.bcrypt._
 import org.birdfeed.chirp.database.models._
 import org.joda.time.DateTime
@@ -11,14 +12,8 @@ import slick.driver.PostgresDriver.api._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
+import scala.concurrent.duration.Duration
 import scala.util.{Try, _}
-import scala.util._
-import org.birdfeed.chirp.database.models._
-import slick.backend.DatabaseConfig
-
-import play.api.db.slick.DatabaseConfigProvider
-
-import scala.util.Try
 
 case class AuthenticationFailedException(message: String) extends Exception(message)
 case class QueryFailedException(message: String) extends Exception(message)
@@ -26,6 +21,74 @@ case class QueryFailedException(message: String) extends Exception(message)
 trait Query {
   val dbConfigProvider: DatabaseConfigProvider
   val dbConfig: DatabaseConfig[JdbcProfile]
+
+  object AccessToken {
+    def find(token: String): Future[Try[AccessToken]] = { where(_.token === token).map(_.map(_.head)) }
+
+    def where(predicate: Tables.AccessToken => Rep[Boolean]): Future[Try[Seq[AccessToken]]] = {
+      dbConfig.db.run(Tables.AccessToken.filter(predicate).result).map(
+        (rows: Seq[Tables.AccessToken#TableElementType]) => {
+          Try(rows.map(new AccessToken(dbConfigProvider)(_)))
+        }
+      )
+    }
+
+    def create(userId: Int): Future[Try[AccessToken]] = {
+      dbConfig.db.run(
+        Tables.AccessToken returning Tables.AccessToken.map(_.token) into (
+          (access_token_row, token) => access_token_row.copy(token = token)
+          ) += Tables.AccessTokenRow(
+            userId,
+            java.util.UUID.randomUUID.toString,
+            java.util.UUID.randomUUID.toString,
+            new java.sql.Date(DateTime.now.getMillis),
+            new java.sql.Date(DateTime.now.plusHours(1).getMillis)
+          )
+      ).map((score_row: Tables.AccessToken#TableElementType) => {
+        Try(new AccessToken(dbConfigProvider)(score_row))
+      })
+    }
+
+    def refresh(refreshToken: String): Future[Try[AccessToken]] = {
+      val collection = Await.result(
+        where(_.refreshToken === refreshToken), Duration.Inf
+      ).get
+
+      create(collection.head.userId)
+    }
+  }
+
+  object ApiKey {
+    def authorize(key: String): Future[Try[Boolean]] = {
+      where { keyRow =>
+        (keyRow.key === key) && keyRow.active
+      }.map(_.map(_.nonEmpty))
+    }
+
+
+    def where(predicate: Tables.ApiKey => Rep[Boolean]): Future[Try[Seq[ApiKey]]] = {
+      dbConfig.db.run(Tables.ApiKey.filter(predicate).result).map(
+        (rows: Seq[Tables.ApiKey#TableElementType]) => {
+          Try(rows.map(new ApiKey(dbConfigProvider)(_)))
+        }
+      )
+    }
+
+    /**
+      * Mint a new API key.
+      * @param active Is the key active?
+      * @return A new ApiKey relation
+      */
+    def create(active: Boolean = false): Future[Try[ApiKey]] = {
+      dbConfig.db.run(
+        Tables.ApiKey returning Tables.ApiKey.map(_.key) into (
+          (api_key_row, key) => api_key_row.copy(key = key)
+          ) += Tables.ApiKeyRow(java.util.UUID.randomUUID.toString, active)
+      ).map((score_row: Tables.ApiKey#TableElementType) => {
+        Try(new ApiKey(dbConfigProvider)(score_row))
+      })
+    }
+  }
 
   object RolePermission {
     def find(id: Int): Future[Try[RolePermission]] = { where(_.id === id).map(_.map(_.head)) }

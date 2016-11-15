@@ -12,9 +12,16 @@ CREATE TABLE "chirp"."role_permission" (
   PRIMARY KEY (id)
 );
 
+CREATE TABLE "chirp"."api_key" (
+  key varchar(36) not null,
+  active boolean not null,
+  primary key(key)
+);
+
 CREATE UNIQUE INDEX index_role_permission_role_id_permission_id ON "chirp"."role_permission" (role_id, permission_id);
 CREATE UNIQUE INDEX index_permission_name ON "chirp"."permission" (name);
 
 # --- !Downs
 DROP TABLE "chirp"."permission" CASCADE;
 DROP TABLE "chirp"."role_permission" CASCADE;
+DROP TABLE "chirp"."api_key" CASCADE;

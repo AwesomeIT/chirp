@@ -12,9 +12,10 @@ import slick.driver.JdbcProfile
   * @param slickTE Slick table element from codegenerated tables
   */
 class Permission @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.Permission#TableElementType) extends Tables.PermissionRow(
-  slickTE.id, slickTE.name) with Relation with Query {
+  slickTE.id, slickTE.name) with Relation with Query with be.objectify.deadbolt.scala.models.Permission {
 
   val dbConfig = dbConfigProvider.get[JdbcProfile]
+  val value = name
 
   implicit val jsonWrites: Writes[this.type] = Writes { user =>
     Json.obj(

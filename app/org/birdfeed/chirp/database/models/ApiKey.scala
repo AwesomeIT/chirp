@@ -7,21 +7,19 @@ import play.api.libs.json.{Json, Writes}
 import slick.driver.JdbcProfile
 
 /**
-  * Role relation instance representing one row object.
+  * ApiKey relation instance representing one row object.
   *
   * @param slickTE Slick table element from codegenerated tables
   */
-class Role @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.Role#TableElementType) extends Tables.RoleRow(
-  slickTE.id, slickTE.name) with Relation with Query with be.objectify.deadbolt.scala.models.Role {
+class ApiKey @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.ApiKey#TableElementType) extends Tables.ApiKeyRow(
+  slickTE.key, slickTE.active) with Relation with Query {
 
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 
   implicit val jsonWrites: Writes[this.type] = Writes { user =>
     Json.obj(
-      "id" -> id,
-      "name" -> name
+      "key" -> key,
+      "active" -> active.toString
     )
   }
-
-
 }
