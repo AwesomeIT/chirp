@@ -1,4 +1,4 @@
-package org.birdfeed.chirp.support.actions
+package org.birdfeed.chirp.actions
 
 
 import com.google.inject.Inject

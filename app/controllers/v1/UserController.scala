@@ -9,7 +9,7 @@ import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import org.birdfeed.chirp.database.{Query, Relation}
 import org.birdfeed.chirp.database.models.User
-import org.birdfeed.chirp.support.actions.{ActionWithValidApiKey, EndpointHandler}
+import org.birdfeed.chirp.actions.{ActionWithValidApiKey, EndpointHandler}
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
 

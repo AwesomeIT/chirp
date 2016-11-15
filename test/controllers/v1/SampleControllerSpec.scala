@@ -10,7 +10,7 @@ import slick.driver.JdbcProfile
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import org.birdfeed.chirp.database.Query
-import org.birdfeed.chirp.support.adapter._
+import org.birdfeed.chirp.adapter._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{BeforeAndAfter, MustMatchers, WordSpec}
 

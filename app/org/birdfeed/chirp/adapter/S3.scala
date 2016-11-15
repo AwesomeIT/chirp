@@ -1,4 +1,4 @@
-package org.birdfeed.chirp.support.adapter
+package org.birdfeed.chirp.adapter
 
 import awscala.Region0
 import awscala.s3._

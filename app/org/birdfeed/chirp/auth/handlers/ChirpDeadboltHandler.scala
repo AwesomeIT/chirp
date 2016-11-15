@@ -1,4 +1,4 @@
-package org.birdfeed.chirp.support.auth.handlers
+package org.birdfeed.chirp.auth.handlers
 
 import be.objectify.deadbolt.scala.models.Subject
 import be.objectify.deadbolt.scala.{AuthenticatedRequest, DeadboltHandler, DynamicResourceHandler}

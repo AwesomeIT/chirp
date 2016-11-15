@@ -10,7 +10,7 @@ import scala.concurrent._
 import akka.actor.ActorSystem
 import org.birdfeed.chirp.database.{Query, Tables}
 import org.birdfeed.chirp.database.models.Experiment
-import org.birdfeed.chirp.support.actions.EndpointHandler
+import org.birdfeed.chirp.actions.EndpointHandler
 import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._

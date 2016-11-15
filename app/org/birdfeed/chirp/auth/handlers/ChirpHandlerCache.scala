@@ -1,4 +1,4 @@
-package org.birdfeed.chirp.support.auth.handlers
+package org.birdfeed.chirp.auth.handlers
 
 import be.objectify.deadbolt.scala.cache.HandlerCache
 import be.objectify.deadbolt.scala.{DeadboltHandler, HandlerKey}

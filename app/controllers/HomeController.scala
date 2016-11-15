@@ -5,7 +5,7 @@ import javax.inject._
 import play.api._
 import play.api.mvc._
 import org.birdfeed.chirp.database.Query
-import org.birdfeed.chirp.support.actions.ActionWithValidApiKey
+import org.birdfeed.chirp.actions.ActionWithValidApiKey
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
 
