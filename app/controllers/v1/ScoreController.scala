@@ -9,7 +9,7 @@ import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import org.birdfeed.chirp.database.{Query, Relation}
 import org.birdfeed.chirp.database.models.{Score, User}
-import org.birdfeed.chirp.actions.EndpointHandler
+import org.birdfeed.chirp.actions.{ActionWithValidApiKey, EndpointHandler}
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
 
@@ -20,20 +20,24 @@ class ScoreController @Inject()(actorSystem: ActorSystem, val dbConfigProvider: 
 
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 
-  def create = Action.async(BodyParsers.parse.json) { request =>
-    val createReads: Reads[Future[Try[Score]]] = (
-      (JsPath \ "score").read[BigDecimal] and
-        (JsPath \ "sample_id").read[Int] and
-        (JsPath \ "experiment_id").read[Int] and
-        (JsPath \ "user_id").read[Int]
-      )((score: BigDecimal, sampleId: Int, experimentId: Int, userId: Int) => {
-      Score.create(score, sampleId, experimentId, userId)
-    })
+  def create = ActionWithValidApiKey(dbConfigProvider) {
+    Action.async(BodyParsers.parse.json) { request =>
+      val createReads: Reads[Future[Try[Score]]] = (
+        (JsPath \ "score").read[BigDecimal] and
+          (JsPath \ "sample_id").read[Int] and
+          (JsPath \ "experiment_id").read[Int] and
+          (JsPath \ "user_id").read[Int]
+        )((score: BigDecimal, sampleId: Int, experimentId: Int, userId: Int) => {
+        Score.create(score, sampleId, experimentId, userId)
+      })
 
-    dtoWithMarshallingSingle(createReads, request.body, Created)
+      dtoWithMarshallingSingle(createReads, request.body, Created)
+    }
   }
 
-  def retrieve(id: String) = Action.async { request =>
-    dtoWithErrorHandlingSingle(Score.find(id.toInt), Ok)
+  def retrieve(id: String) = ActionWithValidApiKey(dbConfigProvider) {
+    Action.async { request =>
+      dtoWithErrorHandlingSingle(Score.find(id.toInt), Ok)
+    }
   }
 }

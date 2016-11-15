@@ -5,7 +5,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata
 import com.google.inject._
 import org.birdfeed.chirp.database.Query
 import org.birdfeed.chirp.adapter.S3
-import org.birdfeed.chirp.actions.EndpointHandler
+import org.birdfeed.chirp.actions.{ActionWithValidApiKey, EndpointHandler}
 import play.api.db.slick.DatabaseConfigProvider
 import play.api.mvc._
 import slick.driver.JdbcProfile
@@ -19,28 +19,34 @@ class SampleController @Inject()(actorSystem: ActorSystem, val dbConfigProvider:
 
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 
-  def create(fileName: String, userId: Int) = Action.async(parse.raw) { request =>
-    request.body.asBytes(request.body.size) match {
-      case Some(bytes) => {
-        val meta = new ObjectMetadata
-        meta.setContentLength(request.body.size)
+  def create(fileName: String, userId: Int) = ActionWithValidApiKey(dbConfigProvider) {
+    Action.async(parse.raw) { request =>
+      request.body.asBytes(request.body.size) match {
+        case Some(bytes) => {
+          val meta = new ObjectMetadata
+          meta.setContentLength(request.body.size)
 
-        dtoWithErrorHandlingSingle(
-          Sample.create(
-            fileName,
-            userId,
-            bucket.putObject(fileName, bytes.toArray, meta).key
-          ), Created)
+          dtoWithErrorHandlingSingle(
+            Sample.create(
+              fileName,
+              userId,
+              bucket.putObject(fileName, bytes.toArray, meta).key
+            ), Created)
+        }
+        case None => Future(InternalServerError(jsonError("S3 file upload failed. Please try again")))
       }
-      case None => Future(InternalServerError(jsonError("S3 file upload failed. Please try again")))
     }
   }
 
-  def retrieve(id: String) = Action.async { request =>
-    dtoWithErrorHandlingSingle(Sample.find(id.toInt), Ok)
+  def retrieve(id: String) = ActionWithValidApiKey(dbConfigProvider) {
+    Action.async { request =>
+      dtoWithErrorHandlingSingle(Sample.find(id.toInt), Ok)
+    }
   }
 
-  def delete(id: String) = Action.async { request =>
-    anyWithErrorHandlingSingle(Sample.delete(id.toInt), Ok)
+  def delete(id: String) = ActionWithValidApiKey(dbConfigProvider) {
+    Action.async { request =>
+      anyWithErrorHandlingSingle(Sample.delete(id.toInt), Ok)
+    }
   }
 }
