@@ -5,7 +5,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata
 import com.google.inject._
 import org.birdfeed.chirp.database.Query
 import org.birdfeed.chirp.support.adapter.S3
-import org.birdfeed.chirp.support.api.EndpointHandler
+import org.birdfeed.chirp.support.actions.EndpointHandler
 import play.api.db.slick.DatabaseConfigProvider
 import play.api.mvc._
 import slick.driver.JdbcProfile

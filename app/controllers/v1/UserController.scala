@@ -9,7 +9,7 @@ import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import org.birdfeed.chirp.database.{Query, Relation}
 import org.birdfeed.chirp.database.models.User
-import org.birdfeed.chirp.support.api.EndpointHandler
+import org.birdfeed.chirp.support.actions.{ActionWithValidApiKey, EndpointHandler}
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
 
@@ -31,17 +31,22 @@ class UserController @Inject()(actorSystem: ActorSystem, val dbConfigProvider: D
     dtoWithMarshallingSingle(authenticateReads, request.body, Ok)
   }
 
-  def create = Action.async(BodyParsers.parse.json) { request =>
-    val createReads: Reads[Future[Try[User]]] = (
-        (JsPath \ "name").read[String] and
-        (JsPath \ "email").read[String] and
-        (JsPath \ "password").read[String]
-    )((name: String, email: String, password: String) => {
-      User.create(name, email, password, 2)
-    })
+  def create = ActionWithValidApiKey(dbConfigProvider) {
+    Action.async(BodyParsers.parse.json) { request =>
+      val createReads: Reads[Future[Try[User]]] = (
+          (JsPath \ "name").read[String] and
+          (JsPath \ "email").read[String] and
+          (JsPath \ "password").read[String]
+      )((name: String, email: String, password: String) => {
+        User.create(name, email, password, 2)
+      })
 
-    dtoWithMarshallingSingle(createReads, request.body, Created)
+      dtoWithMarshallingSingle(createReads, request.body, Created)
+    }
   }
+
+//  def create = Action.async(BodyParsers.parse.json) { request =>
+//  }
 
   def retrieve(id: String) = Action.async { request =>
     dtoWithErrorHandlingSingle(User.find(id.toInt), Ok)
