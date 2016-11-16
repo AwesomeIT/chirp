@@ -16,6 +16,8 @@ class ScoreControllerSpec extends PlaySpec with OneServerPerSuite with Query {
   val dbConfigProvider = app.injector.instanceOf(classOf[DatabaseConfigProvider])
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 
+  val testKey = Await.result(ApiKey.create(true), Duration.Inf).get.key
+
   val experiment = Await.result(
     Experiment.create(
       java.util.UUID.randomUUID.toString, new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime),
@@ -34,6 +36,7 @@ class ScoreControllerSpec extends PlaySpec with OneServerPerSuite with Query {
     lazy val created = Await.result(
       wsClient
         .url(s"http://localhost:${port}/v1/score")
+        .withHeaders("Chirp-Api-Key" -> testKey)
         .put(Json.obj(
           "score" -> 2.5,
           "sample_id" -> sample.id,
@@ -47,6 +50,7 @@ class ScoreControllerSpec extends PlaySpec with OneServerPerSuite with Query {
       lazy val retrieved = Await.result(
         wsClient
           .url(s"http://localhost:${port}/v1/score/${(created.json \ "id").get}")
+          .withHeaders("Chirp-Api-Key" -> testKey)
           .get, Duration.Inf
       )
 

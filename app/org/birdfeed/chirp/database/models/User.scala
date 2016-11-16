@@ -1,14 +1,16 @@
 package org.birdfeed.chirp.database.models
 
+import be.objectify.deadbolt.scala.models.Subject
 import com.google.inject.Inject
 import org.birdfeed.chirp.database.{Query, Relation, Tables}
-import slick.driver.PostgresDriver.api._
-import org.birdfeed.chirp.database.Tables
 import play.api.db.slick.DatabaseConfigProvider
 import play.api.libs.json.{Json, Writes}
 import slick.driver.JdbcProfile
+import slick.driver.PostgresDriver.api._
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 import scala.util.Try
 
 /**
@@ -18,9 +20,11 @@ import scala.util.Try
   */
 class User @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.User#TableElementType) extends Tables.UserRow(
   slickTE.id, slickTE.name, slickTE.email, slickTE.bcryptHash, slickTE.roleId
-) with Relation with Query {
+) with Relation with Query with Subject {
 
   val dbConfig = dbConfigProvider.get[JdbcProfile]
+
+  val identifier = id.toString
 
   implicit val jsonWrites: Writes[this.type] = Writes { user =>
     Json.obj(
@@ -29,6 +33,34 @@ class User @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: 
       "email" -> email,
       "role_id" -> roleId
     )
+  }
+
+  // TODO: Maybe asynchronously handle these?
+  /**
+    * Deadbolt 2 roles listing.
+    * @return
+    */
+  def roles: List[be.objectify.deadbolt.scala.models.Role] = {
+    Await.result(
+      Role.where(_.id == roleId), Duration.Inf
+    ).get.toList
+  }
+
+  // TODO: Is this really the way we have to do a fucking 'join'
+  /**
+    * Deadbolt 2 permissions listing.
+    * @return
+    */
+  def permissions: List[be.objectify.deadbolt.scala.models.Permission] = {
+    val permissionIds = Await.result(
+      RolePermission.where(_.roleId == roleId).map(_.get.map(_.permissionId)),
+      Duration.Inf
+    )
+
+    Await.result(
+      Permission.where { permission => permissionIds.contains(permission.id) },
+      Duration.Inf
+    ).get.toList
   }
 
   /**

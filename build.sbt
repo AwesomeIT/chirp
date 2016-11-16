@@ -22,7 +22,7 @@ libraryDependencies ++= Seq(
 
   // Auth
   "com.github.t3hnar" %% "scala-bcrypt" % "2.6",
-  "com.nulab-inc" %% "play2-oauth2-provider" % "1.0.0",
+  "be.objectify" %% "deadbolt-scala" % "2.5.0",
 
   // FRM, Evolutions support
   "org.postgresql" % "postgresql" % "9.4-1200-jdbc41",
@@ -33,7 +33,7 @@ libraryDependencies ++= Seq(
   // Joda Time Wrapper
   "com.github.nscala-time" %% "nscala-time" % "2.14.0",
 
-  // AWS
+// AWS
   "com.github.seratch" %% "awscala" % "0.5.+"
 )
 

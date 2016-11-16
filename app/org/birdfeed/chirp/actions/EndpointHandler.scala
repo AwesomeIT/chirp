@@ -1,4 +1,4 @@
-package org.birdfeed.chirp.support.api
+package org.birdfeed.chirp.actions
 
 import org.birdfeed.chirp.database.{AuthenticationFailedException, Relation}
 import org.postgresql.util.PSQLException
