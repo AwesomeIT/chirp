@@ -18,6 +18,8 @@ class UserControllerSpec extends PlaySpec with OneServerPerSuite with Query {
   val dbConfigProvider = app.injector.instanceOf(classOf[DatabaseConfigProvider])
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 
+  val testKey = Await.result(ApiKey.create(true), Duration.Inf).get.key
+
   "PUT /v1/user/create" should {
     "create a new user" in {
       lazy val username = java.util.UUID.randomUUID.toString
@@ -26,6 +28,7 @@ class UserControllerSpec extends PlaySpec with OneServerPerSuite with Query {
       lazy val response = Await.result(
         wsClient
           .url(s"http://localhost:${port}/v1/user")
+          .withHeaders("Chirp-Api-Key" -> testKey)
           .put(Json.obj(
                           "name" -> username,
                           "email" -> email,
@@ -50,12 +53,14 @@ class UserControllerSpec extends PlaySpec with OneServerPerSuite with Query {
 
     "authenticate with the correct credentials" in {
       val response = Await.result(
-        wsClient.url(s"http://localhost:${port}/v1/user/authenticate").post(
-          Json.obj(
-            "email" -> email,
-            "password" -> email
-          )
-        ), Duration.Inf
+        wsClient.url(s"http://localhost:${port}/v1/user/authenticate")
+          .withHeaders("Chirp-Api-Key" -> testKey)
+          .post(
+            Json.obj(
+              "email" -> email,
+              "password" -> email
+            )
+          ), Duration.Inf
       )
 
       response.status must equal(200)
@@ -63,12 +68,14 @@ class UserControllerSpec extends PlaySpec with OneServerPerSuite with Query {
 
     "not authenticate with incorrect credentials" in {
       lazy val response = Await.result(
-        wsClient.url(s"http://localhost:${port}/v1/user/authenticate").post(
-          Json.obj(
-            "email" -> email,
-            "password" -> "obviously_incorrect_password"
-          )
-        ), Duration.Inf
+        wsClient.url(s"http://localhost:${port}/v1/user/authenticate")
+          .withHeaders("Chirp-Api-Key" -> testKey)
+          .post(
+            Json.obj(
+              "email" -> email,
+              "password" -> "obviously_incorrect_password"
+            )
+          ), Duration.Inf
       )
 
       response.status must equal(401)
@@ -84,8 +91,9 @@ class UserControllerSpec extends PlaySpec with OneServerPerSuite with Query {
       ).get
 
       lazy val response = Await.result(
-        wsClient.url(s"http://localhost:${port}/v1/user/${created.id}").delete,
-        Duration.Inf
+        wsClient.url(s"http://localhost:${port}/v1/user/${created.id}")
+          .withHeaders("Chirp-Api-Key" -> testKey)
+          .delete, Duration.Inf
       )
 
       response.status must equal(200)

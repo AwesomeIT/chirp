@@ -20,6 +20,8 @@ class SampleControllerSpec extends PlaySpec with OneServerPerSuite with Query wi
   val dbConfigProvider = app.injector.instanceOf(classOf[DatabaseConfigProvider])
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 
+  val testKey = Await.result(ApiKey.create(true), Duration.Inf).get.key
+
   val uuid = java.util.UUID.randomUUID.toString
   val user = Await.result(User.create(
     java.util.UUID.randomUUID.toString, s"${uuid}@uuid.com", uuid, 1
@@ -29,6 +31,7 @@ class SampleControllerSpec extends PlaySpec with OneServerPerSuite with Query wi
   lazy val created = Await.result(
     wsClient
       .url(s"http://localhost:${port}/v1/sample")
+      .withHeaders("Chirp-Api-Key" -> testKey)
       .withQueryString(
         "user_id" -> user.id.toString,
         "file_name" -> "scala_test.wav"
@@ -45,6 +48,7 @@ class SampleControllerSpec extends PlaySpec with OneServerPerSuite with Query wi
       lazy val retrieved = Await.result(
         wsClient
           .url(s"http://localhost:${port}/v1/sample/${(created.json \ "id").get}")
+          .withHeaders("Chirp-Api-Key" -> testKey)
           .get, Duration.Inf
       )
 
@@ -55,7 +59,9 @@ class SampleControllerSpec extends PlaySpec with OneServerPerSuite with Query wi
   "DELETE /v1/sample/:id" should {
     "delete a created sample" in {
       Await.result(
-        wsClient.url(s"http://localhost:${port}/v1/sample/${(created.json \ "id").get}").delete,
+        wsClient.url(s"http://localhost:${port}/v1/sample/${(created.json \ "id").get}")
+          .withHeaders("Chirp-Api-Key" -> testKey)
+          .delete,
         Duration.Inf
       ).body.toInt must equal(1)
     }
