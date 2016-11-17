@@ -10,7 +10,7 @@ import scala.concurrent._
 import akka.actor.ActorSystem
 import org.birdfeed.chirp.database.{Query, Tables}
 import org.birdfeed.chirp.database.models.Experiment
-import org.birdfeed.chirp.actions.{ActionWithValidApiKey, EndpointHandler}
+import org.birdfeed.chirp.actions.ActionWithValidApiKey
 import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
@@ -20,38 +20,43 @@ import slick.driver.JdbcProfile
 
 
 @Singleton
-class ExperimentController @Inject()(actorSystem: ActorSystem, val dbConfigProvider: DatabaseConfigProvider)(implicit exec: ExecutionContext) extends Controller with EndpointHandler with Query {
+class ExperimentController @Inject()(actorSystem: ActorSystem, val dbConfigProvider: DatabaseConfigProvider)(implicit exec: ExecutionContext) extends Controller with Query {
 
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 
   def create = ActionWithValidApiKey(dbConfigProvider) {
     Action.async(BodyParsers.parse.json) { request =>
-      val createReads: Reads[Future[Try[Experiment]]] = (
+      implicit val createReads: Reads[Future[Result]] = (
         (JsPath \ "name").read[String] and
-          (JsPath \ "start_date").read[String] and
-          (JsPath \ "end_date").readNullable[String]
-        ) ((name: String, startDate: String, endDate: Option[String]) => {
+        (JsPath \ "start_date").read[String] and
+        (JsPath \ "end_date").readNullable[String]
+      )((name: String, startDate: String, endDate: Option[String]) => {
         val format = new SimpleDateFormat("MMddYYYY")
         val sqlStartDate = new java.sql.Date(format.parse(startDate).getTime)
+
         Experiment.create(name, sqlStartDate, endDate.map { date =>
           new java.sql.Date(format.parse(date).getTime)
-        })
+        }).map { created =>
+          val cGet = created.get
+          Created(cGet.jsonWrites.writes(cGet))
+        }
       })
 
-      dtoWithMarshallingSingle(createReads, request.body, Created)
+      request.body.validate.get
     }
   }
 
   def retrieve(id: String) = ActionWithValidApiKey(dbConfigProvider) {
-    Action.async { request =>
-      dtoWithErrorHandlingSingle(Experiment.find(id.toInt), Ok)
+    Action.async {
+      Experiment.find(id.toInt).map { retrieved =>
+        val rGet = retrieved.get
+        Ok(rGet.jsonWrites.writes(rGet))
+      }
     }
   }
 
   def delete(id: String) = ActionWithValidApiKey(dbConfigProvider) {
-    Action.async { request =>
-      anyWithErrorHandlingSingle(Experiment.delete(id.toInt), Ok)
-    }
+    Action.async { Experiment.delete(id.toInt).map { count => Ok(count.get.toString) } }
   }
 
   /*def update(id: String) = Action.async(BodyParsers.parse.json) { request =>

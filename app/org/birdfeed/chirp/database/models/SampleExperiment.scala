@@ -17,7 +17,7 @@ import scala.util.Try
   */
 class SampleExperiment @Inject()(dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.SampleExperiment#TableElementType) extends Tables.SampleExperimentRow(
   slickTE.id, slickTE.sampleId, slickTE.experimentId
-) with Relation {
+) with Relation[Tables#SampleExperimentRow] {
 
   // TODO: Fill this in!
   implicit val jsonWrites: Writes[this.type] = Writes { sample =>
