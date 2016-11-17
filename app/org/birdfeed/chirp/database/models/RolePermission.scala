@@ -12,7 +12,7 @@ import slick.driver.JdbcProfile
   * @param slickTE Slick table element from codegenerated tables
   */
 class RolePermission @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.RolePermission#TableElementType) extends Tables.RolePermissionRow(
-  slickTE.id, slickTE.roleId, slickTE.permissionId) with Relation with Query {
+  slickTE.id, slickTE.roleId, slickTE.permissionId) with Relation[Tables#RolePermissionRow] with Query {
 
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 

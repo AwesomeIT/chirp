@@ -12,7 +12,7 @@ import play.api.libs.json.{Json, Writes}
   */
 class Sample @Inject()(dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.Sample#TableElementType) extends Tables.SampleRow(
   slickTE.id, slickTE.name, slickTE.userId, slickTE.s3Url, slickTE.createdAt, slickTE.updatedAt
-) with Relation {
+) with Relation[Tables#Sample] {
 
   override def equals(rhs: Any): Boolean = {
     if (rhs.getClass != this.getClass) { false }

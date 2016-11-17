@@ -20,7 +20,7 @@ import scala.util.Try
   */
 class User @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.User#TableElementType) extends Tables.UserRow(
   slickTE.id, slickTE.name, slickTE.email, slickTE.bcryptHash, slickTE.roleId
-) with Relation with Query with Subject {
+) with Relation[Tables#UserRow] with Query with Subject {
 
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 

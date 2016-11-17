@@ -12,7 +12,7 @@ import slick.driver.JdbcProfile
   * @param slickTE Slick table element from codegenerated tables
   */
 class AccessToken @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.AccessToken#TableElementType) extends Tables.AccessTokenRow(
-  slickTE.userId, slickTE.token, slickTE.refreshToken, slickTE.issueTime, slickTE.expiresIn) with Relation with Query {
+  slickTE.userId, slickTE.token, slickTE.refreshToken, slickTE.issueTime, slickTE.expiresIn) with Relation[Tables#AccessTokenRow] with Query {
 
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 

@@ -12,7 +12,7 @@ import slick.driver.JdbcProfile
   * @param slickTE Slick table element from codegenerated tables
   */
 class ApiKey @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.ApiKey#TableElementType) extends Tables.ApiKeyRow(
-  slickTE.key, slickTE.active) with Relation with Query {
+  slickTE.key, slickTE.active) with Relation[Tables#ApiKeyRow] with Query {
 
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 

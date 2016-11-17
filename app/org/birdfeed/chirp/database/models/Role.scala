@@ -12,7 +12,7 @@ import slick.driver.JdbcProfile
   * @param slickTE Slick table element from codegenerated tables
   */
 class Role @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.Role#TableElementType) extends Tables.RoleRow(
-  slickTE.id, slickTE.name) with Relation with Query with be.objectify.deadbolt.scala.models.Role {
+  slickTE.id, slickTE.name) with Relation[Tables#RoleRow] with Query with be.objectify.deadbolt.scala.models.Role {
 
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 

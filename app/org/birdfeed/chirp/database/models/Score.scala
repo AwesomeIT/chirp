@@ -3,7 +3,7 @@ package org.birdfeed.chirp.database.models
 import com.google.inject.Inject
 import org.birdfeed.chirp.database._
 import play.api.db.slick.DatabaseConfigProvider
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.json._
 import slick.driver.JdbcProfile
 import org.birdfeed.chirp.database.Query
 /**
@@ -13,7 +13,7 @@ import org.birdfeed.chirp.database.Query
   */
 class Score @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.Score#TableElementType) extends Tables.ScoreRow(
   slickTE.id, slickTE.score, slickTE.sampleId, slickTE.experimentId, slickTE.userId
-) with Relation with Query {
+) with Relation[Tables#ScoreRow] with Query {
 
   /* Will fail without override, score is a decimal in the db and a BigDecimal in the object */
   override def equals(rhs: Any): Boolean = {

@@ -18,7 +18,7 @@ import scala.util.Try
   */
 class Experiment @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.Experiment#TableElementType) extends Tables.ExperimentRow(
   slickTE.id, slickTE.name, slickTE.startDate, slickTE.endDate, slickTE.createdAt, slickTE.updatedAt
-) with Relation with org.birdfeed.chirp.database.Query {
+) with Relation[Tables#ExperimentRow] with org.birdfeed.chirp.database.Query {
 
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 
