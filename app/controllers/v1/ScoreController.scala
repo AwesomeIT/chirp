@@ -9,6 +9,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.mvc._
 import slick.driver.JdbcProfile
+import slick.driver.PostgresDriver.api._
 
 import scala.concurrent._
 
@@ -40,6 +41,16 @@ class ScoreController @Inject()(actorSystem: ActorSystem, val dbConfigProvider: 
       Score.find(id.toInt).map { retrieved =>
         val rGet = retrieved.get
         Ok(rGet.jsonWrites.writes(rGet))
+      }
+    }
+  }
+
+  def getBySample(id: Int) = ActionWithValidApiKey(dbConfigProvider) {
+    Action.async {
+      Score.where(_.sampleId === id).map { s =>
+        implicit val scoreFormat = Json.format[Score]
+        val scores = Json.obj("scores" -> s.get)
+        Ok (scores)
       }
     }
   }
