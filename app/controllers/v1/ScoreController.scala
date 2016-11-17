@@ -10,8 +10,12 @@ import play.api.libs.json._
 import play.api.mvc._
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
-
 import scala.concurrent._
+import slick.backend.DatabaseConfig
+import slick.driver.JdbcProfile
+import slick.driver.PostgresDriver.api._
+
+import scala.util._
 
 @Singleton
 class ScoreController @Inject()(actorSystem: ActorSystem, val dbConfigProvider: DatabaseConfigProvider)(implicit exec: ExecutionContext) extends Controller with Query {
@@ -47,10 +51,12 @@ class ScoreController @Inject()(actorSystem: ActorSystem, val dbConfigProvider: 
 
   def getBySample(id: Int) = ActionWithValidApiKey(dbConfigProvider) {
     Action.async {
-      Score.where(_.sampleId === id).map { s =>
-        implicit val scoreFormat = Json.format[Score]
-        val scores = Json.obj("scores" -> s.get)
-        Ok (scores)
+      Score.where(_.sampleId === id).map { scores =>
+        val serialized = JsArray(
+          scores.get.map { score => score.jsonWrites.writes(score.asInstanceOf[score.type]) }
+        )
+
+        Ok(serialized)
       }
     }
   }
