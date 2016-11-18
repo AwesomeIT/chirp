@@ -13,7 +13,6 @@ import slick.driver.PostgresDriver.api._
 import scala.concurrent._
 import slick.backend.DatabaseConfig
 import slick.driver.JdbcProfile
-import slick.driver.PostgresDriver.api._
 
 import scala.util._
 
@@ -45,18 +44,6 @@ class ScoreController @Inject()(actorSystem: ActorSystem, val dbConfigProvider: 
       Score.find(id.toInt).map { retrieved =>
         val rGet = retrieved.get
         Ok(rGet.jsonWrites.writes(rGet))
-      }
-    }
-  }
-
-  def getBySample(id: Int) = ActionWithValidApiKey(dbConfigProvider) {
-    Action.async {
-      Score.where(_.sampleId === id).map { scores =>
-        val serialized = JsArray(
-          scores.get.map { score => score.jsonWrites.writes(score.asInstanceOf[score.type]) }
-        )
-
-        Ok(serialized)
       }
     }
   }
