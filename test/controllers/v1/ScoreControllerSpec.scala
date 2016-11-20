@@ -18,15 +18,14 @@ class ScoreControllerSpec extends PlaySpec with OneServerPerSuite with Query {
 
   val testKey = Await.result(ApiKey.create(true), Duration.Inf).get.key
 
-  val experiment = Await.result(
-    Experiment.create(
-      java.util.UUID.randomUUID.toString, new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime),
-      Some(new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime))), Duration.Inf).get
-
   val uuid = java.util.UUID.randomUUID.toString
   val user = Await.result(User.create(
     java.util.UUID.randomUUID.toString, s"${uuid}@uuid.com", uuid, 1
   ), Duration.Inf).get
+
+  val experiment = Await.result(
+    Experiment.create(
+      java.util.UUID.randomUUID.toString, user.id), Duration.Inf).get
 
   val sample = Await.result(Sample.create(
     "test", user.id, "moo.wav"

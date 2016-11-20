@@ -17,6 +17,7 @@ import play.api.libs.functional.syntax._
 import play.api.db.slick.DatabaseConfigProvider
 import play.libs.Json
 import slick.driver.JdbcProfile
+import slick.driver.PostgresDriver.api._
 
 
 @Singleton
@@ -28,15 +29,9 @@ class ExperimentController @Inject()(actorSystem: ActorSystem, val dbConfigProvi
     Action.async(BodyParsers.parse.json) { request =>
       implicit val createReads: Reads[Future[Result]] = (
         (JsPath \ "name").read[String] and
-        (JsPath \ "start_date").read[String] and
-        (JsPath \ "end_date").readNullable[String]
-      )((name: String, startDate: String, endDate: Option[String]) => {
-        val format = new SimpleDateFormat("MMddYYYY")
-        val sqlStartDate = new java.sql.Date(format.parse(startDate).getTime)
-
-        Experiment.create(name, sqlStartDate, endDate.map { date =>
-          new java.sql.Date(format.parse(date).getTime)
-        }).map { created =>
+        (JsPath \ "user_id").read[Int]
+      )((name: String, user_id: Int) => {
+        Experiment.create(name, user_id).map { created =>
           val cGet = created.get
           Created(cGet.jsonWrites.writes(cGet))
         }
@@ -57,6 +52,17 @@ class ExperimentController @Inject()(actorSystem: ActorSystem, val dbConfigProvi
 
   def delete(id: String) = ActionWithValidApiKey(dbConfigProvider) {
     Action.async { Experiment.delete(id.toInt).map { count => Ok(count.get.toString) } }
+  }
+
+  def getSamples(id: String) = ActionWithValidApiKey(dbConfigProvider) {
+    Action.async {
+      SampleExperiment.where(_.experimentId === id.toInt).map { sample_experiments =>
+        val serialized = JsArray(
+          sample_experiments.get.map { se => se.jsonWrites.writes(se.asInstanceOf[se.type]) }
+        )
+        Ok(serialized)
+      }
+    }
   }
 
   /*def update(id: String) = Action.async(BodyParsers.parse.json) { request =>

@@ -17,7 +17,7 @@ import scala.util.Try
   * @param slickTE Slick table element from codegenerated tables
   */
 class Experiment @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.Experiment#TableElementType) extends Tables.ExperimentRow(
-  slickTE.id, slickTE.name, slickTE.startDate, slickTE.endDate, slickTE.createdAt, slickTE.updatedAt
+  slickTE.id, slickTE.name, slickTE.createdAt, slickTE.updatedAt, slickTE.userId
 ) with Relation[Tables#ExperimentRow] with org.birdfeed.chirp.database.Query {
 
   val dbConfig = dbConfigProvider.get[JdbcProfile]
@@ -27,9 +27,8 @@ class Experiment @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val sli
     else {
       val cmp = rhs.asInstanceOf[this.type]
       slickTE.id == cmp.slickTE.id &&
-        slickTE.name == cmp.slickTE.name &&
-        slickTE.startDate.toString == cmp.slickTE.startDate.toString &&
-        slickTE.endDate.toString == cmp.slickTE.endDate.toString
+      slickTE.name == cmp.slickTE.name &&
+      slickTE.userId == cmp.slickTE.userId
     }
   }
 
@@ -42,10 +41,9 @@ class Experiment @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val sli
     Json.obj(
       "id" -> id,
       "name" -> name,
-      "startDate" -> startDate,
-      "endDate" -> endDate,
       "createdAt" -> createdAt,
-      "updatedAt" -> updatedAt
+      "updatedAt" -> updatedAt,
+      "user_id" -> userId
     )
   }
 }

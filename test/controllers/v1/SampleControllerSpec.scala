@@ -66,4 +66,17 @@ class SampleControllerSpec extends PlaySpec with OneServerPerSuite with Query wi
       ).body.toInt must equal(1)
     }
   }
+
+  "GET /v1/sample/:id/scores" should {
+    "retrieve a list of scores" in {
+      lazy val retrieved = Await.result (
+        wsClient
+          .url(s"http://localhost:${port}/v1/sample/${(created.json \ "id").get}/scores")
+          .withHeaders("Chirp-Api-Key" -> testKey)
+          .get, Duration.Inf
+        )
+
+      retrieved.status must equal(200)
+    }
+  }
 }

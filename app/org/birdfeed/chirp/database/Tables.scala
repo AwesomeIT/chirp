@@ -49,9 +49,6 @@ trait Tables {
 
     /** Foreign key referencing User (database name access_token_user_id_fkey) */
     lazy val userFk = foreignKey("access_token_user_id_fkey", userId, User)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
-
-    /** Uniqueness Index over (refreshToken) (database name index_access_token_refresh_token) */
-    val index1 = index("index_access_token_refresh_token", refreshToken, unique=true)
   }
   /** Collection-like TableQuery object for table AccessToken */
   lazy val AccessToken = new TableQuery(tag => new AccessToken(tag))
@@ -82,34 +79,34 @@ trait Tables {
   /** Entity class storing rows of table Experiment
    *  @param id Database column id SqlType(serial), AutoInc, PrimaryKey
    *  @param name Database column name SqlType(varchar), Length(255,true)
-   *  @param startDate Database column start_date SqlType(date)
-   *  @param endDate Database column end_date SqlType(date), Default(None)
    *  @param createdAt Database column created_at SqlType(date)
-   *  @param updatedAt Database column updated_at SqlType(date) */
-  case class ExperimentRow(id: Int, name: String, startDate: java.sql.Date, endDate: Option[java.sql.Date] = None, createdAt: java.sql.Date, updatedAt: java.sql.Date)
+   *  @param updatedAt Database column updated_at SqlType(date)
+   *  @param userId Database column user_id SqlType(int4) */
+  case class ExperimentRow(id: Int, name: String, createdAt: java.sql.Date, updatedAt: java.sql.Date, userId: Int)
   /** GetResult implicit for fetching ExperimentRow objects using plain SQL queries */
-  implicit def GetResultExperimentRow(implicit e0: GR[Int], e1: GR[String], e2: GR[java.sql.Date], e3: GR[Option[java.sql.Date]]): GR[ExperimentRow] = GR{
+  implicit def GetResultExperimentRow(implicit e0: GR[Int], e1: GR[String], e2: GR[java.sql.Date]): GR[ExperimentRow] = GR{
     prs => import prs._
-    ExperimentRow.tupled((<<[Int], <<[String], <<[java.sql.Date], <<?[java.sql.Date], <<[java.sql.Date], <<[java.sql.Date]))
+    ExperimentRow.tupled((<<[Int], <<[String], <<[java.sql.Date], <<[java.sql.Date], <<[Int]))
   }
   /** Table description of table experiment. Objects of this class serve as prototypes for rows in queries. */
   class Experiment(_tableTag: Tag) extends Table[ExperimentRow](_tableTag, Some("chirp"), "experiment") {
-    def * = (id, name, startDate, endDate, createdAt, updatedAt) <> (ExperimentRow.tupled, ExperimentRow.unapply)
+    def * = (id, name, createdAt, updatedAt, userId) <> (ExperimentRow.tupled, ExperimentRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(id), Rep.Some(name), Rep.Some(startDate), endDate, Rep.Some(createdAt), Rep.Some(updatedAt)).shaped.<>({r=>import r._; _1.map(_=> ExperimentRow.tupled((_1.get, _2.get, _3.get, _4, _5.get, _6.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(id), Rep.Some(name), Rep.Some(createdAt), Rep.Some(updatedAt), Rep.Some(userId)).shaped.<>({r=>import r._; _1.map(_=> ExperimentRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(serial), AutoInc, PrimaryKey */
     val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
     /** Database column name SqlType(varchar), Length(255,true) */
     val name: Rep[String] = column[String]("name", O.Length(255,varying=true))
-    /** Database column start_date SqlType(date) */
-    val startDate: Rep[java.sql.Date] = column[java.sql.Date]("start_date")
-    /** Database column end_date SqlType(date), Default(None) */
-    val endDate: Rep[Option[java.sql.Date]] = column[Option[java.sql.Date]]("end_date", O.Default(None))
     /** Database column created_at SqlType(date) */
     val createdAt: Rep[java.sql.Date] = column[java.sql.Date]("created_at")
     /** Database column updated_at SqlType(date) */
     val updatedAt: Rep[java.sql.Date] = column[java.sql.Date]("updated_at")
+    /** Database column user_id SqlType(int4) */
+    val userId: Rep[Int] = column[Int]("user_id")
+
+    /** Foreign key referencing User (database name experiment_user_id_fkey) */
+    lazy val userFk = foreignKey("experiment_user_id_fkey", userId, User)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
   }
   /** Collection-like TableQuery object for table Experiment */
   lazy val Experiment = new TableQuery(tag => new Experiment(tag))
@@ -133,9 +130,6 @@ trait Tables {
     val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
     /** Database column name SqlType(varchar), Length(255,true) */
     val name: Rep[String] = column[String]("name", O.Length(255,varying=true))
-
-    /** Uniqueness Index over (name) (database name index_permission_name) */
-    val index1 = index("index_permission_name", name, unique=true)
   }
   /** Collection-like TableQuery object for table Permission */
   lazy val Permission = new TableQuery(tag => new Permission(tag))
@@ -248,9 +242,6 @@ trait Tables {
     lazy val permissionFk = foreignKey("role_permission_permission_id_fkey", permissionId, Permission)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
     /** Foreign key referencing Role (database name role_permission_role_id_fkey) */
     lazy val roleFk = foreignKey("role_permission_role_id_fkey", roleId, Role)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
-
-    /** Uniqueness Index over (roleId,permissionId) (database name index_role_permission_role_id_permission_id) */
-    val index1 = index("index_role_permission_role_id_permission_id", (roleId, permissionId), unique=true)
   }
   /** Collection-like TableQuery object for table RolePermission */
   lazy val RolePermission = new TableQuery(tag => new RolePermission(tag))
@@ -261,18 +252,19 @@ trait Tables {
    *  @param userId Database column user_id SqlType(int4)
    *  @param s3Url Database column s3_url SqlType(varchar), Length(255,true)
    *  @param createdAt Database column created_at SqlType(date)
-   *  @param updatedAt Database column updated_at SqlType(date) */
-  case class SampleRow(id: Int, name: String, userId: Int, s3Url: String, createdAt: java.sql.Date, updatedAt: java.sql.Date)
+   *  @param updatedAt Database column updated_at SqlType(date)
+   *  @param active Database column active SqlType(bool) */
+  case class SampleRow(id: Int, name: String, userId: Int, s3Url: String, createdAt: java.sql.Date, updatedAt: java.sql.Date, active: Boolean)
   /** GetResult implicit for fetching SampleRow objects using plain SQL queries */
-  implicit def GetResultSampleRow(implicit e0: GR[Int], e1: GR[String], e2: GR[java.sql.Date]): GR[SampleRow] = GR{
+  implicit def GetResultSampleRow(implicit e0: GR[Int], e1: GR[String], e2: GR[java.sql.Date], e3: GR[Boolean]): GR[SampleRow] = GR{
     prs => import prs._
-    SampleRow.tupled((<<[Int], <<[String], <<[Int], <<[String], <<[java.sql.Date], <<[java.sql.Date]))
+    SampleRow.tupled((<<[Int], <<[String], <<[Int], <<[String], <<[java.sql.Date], <<[java.sql.Date], <<[Boolean]))
   }
   /** Table description of table sample. Objects of this class serve as prototypes for rows in queries. */
   class Sample(_tableTag: Tag) extends Table[SampleRow](_tableTag, Some("chirp"), "sample") {
-    def * = (id, name, userId, s3Url, createdAt, updatedAt) <> (SampleRow.tupled, SampleRow.unapply)
+    def * = (id, name, userId, s3Url, createdAt, updatedAt, active) <> (SampleRow.tupled, SampleRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(id), Rep.Some(name), Rep.Some(userId), Rep.Some(s3Url), Rep.Some(createdAt), Rep.Some(updatedAt)).shaped.<>({r=>import r._; _1.map(_=> SampleRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(id), Rep.Some(name), Rep.Some(userId), Rep.Some(s3Url), Rep.Some(createdAt), Rep.Some(updatedAt), Rep.Some(active)).shaped.<>({r=>import r._; _1.map(_=> SampleRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get, _7.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(serial), AutoInc, PrimaryKey */
     val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
@@ -286,6 +278,8 @@ trait Tables {
     val createdAt: Rep[java.sql.Date] = column[java.sql.Date]("created_at")
     /** Database column updated_at SqlType(date) */
     val updatedAt: Rep[java.sql.Date] = column[java.sql.Date]("updated_at")
+    /** Database column active SqlType(bool) */
+    val active: Rep[Boolean] = column[Boolean]("active")
 
     /** Foreign key referencing User (database name sample_user_fk) */
     lazy val userFk = foreignKey("sample_user_fk", userId, User)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.Cascade)
@@ -394,9 +388,6 @@ trait Tables {
 
     /** Foreign key referencing Role (database name user_role_fk) */
     lazy val roleFk = foreignKey("user_role_fk", roleId, Role)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.Restrict)
-
-    /** Uniqueness Index over (email) (database name index_user_email) */
-    val index1 = index("index_user_email", email, unique=true)
   }
   /** Collection-like TableQuery object for table User */
   lazy val User = new TableQuery(tag => new User(tag))

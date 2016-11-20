@@ -12,6 +12,7 @@ import org.birdfeed.chirp.database.models.User
 import org.birdfeed.chirp.actions.ActionWithValidApiKey
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
+import slick.driver.PostgresDriver.api._
 
 import scala.util._
 
@@ -64,5 +65,16 @@ class UserController @Inject()(actorSystem: ActorSystem, val dbConfigProvider: D
 
   def delete(id: String) = ActionWithValidApiKey(dbConfigProvider) {
     Action.async { User.delete(id.toInt).map { count => Ok(count.get.toString) } }
+  }
+
+  def getExperiments(id: String) = ActionWithValidApiKey(dbConfigProvider) {
+    Action.async {
+      Experiment.where(_.userId === id.toInt).map { retrieved =>
+        val serialized = JsArray(
+          retrieved.get.map { experiment => experiment.jsonWrites.writes(experiment.asInstanceOf[experiment.type]) }
+        )
+        Ok(serialized)
+      }
+    }
   }
 }

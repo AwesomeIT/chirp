@@ -18,18 +18,22 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 PUT     /v1/user                    controllers.v1.UserController.create
 GET     /v1/user/:id                controllers.v1.UserController.retrieve(id)
 DELETE  /v1/user/:id                controllers.v1.UserController.delete(id)
+GET     /v1/user/:id/experiments    controllers.v1.UserController.getExperiments(id)
 POST    /v1/user/authenticate       controllers.v1.UserController.authenticate
 
 # Experiments
-PUT     /v1/experiment/create       controllers.v1.ExperimentController.create
+PUT     /v1/experiment              controllers.v1.ExperimentController.create
 GET     /v1/experiment/:id          controllers.v1.ExperimentController.retrieve(id)
 DELETE  /v1/experiment/:id          controllers.v1.ExperimentController.delete(id)
+GET     /v1/experiment/:id/samples  controllers.v1.ExperimentController.getSamples(id)
 #POST    /v1/experiment/:id          controllers.v1.ExperimentController.update(id, _)
 
 # Samples
 PUT     /v1/sample                  controllers.v1.SampleController.create(file_name: String, user_id: Int)
 GET     /v1/sample/:id              controllers.v1.SampleController.retrieve(id)
 DELETE  /v1/sample/:id              controllers.v1.SampleController.delete(id)
+GET     /v1/sample/:id/scores       controllers.v1.SampleController.getScores(id)
+
 #Scores
 PUT     /v1/score                   controllers.v1.ScoreController.create
 GET     /v1/score/:id               controllers.v1.ScoreController.retrieve(id)

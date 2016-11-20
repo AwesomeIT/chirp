@@ -9,8 +9,12 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.mvc._
 import slick.driver.JdbcProfile
-
+import slick.driver.PostgresDriver.api._
 import scala.concurrent._
+import slick.backend.DatabaseConfig
+import slick.driver.JdbcProfile
+
+import scala.util._
 
 @Singleton
 class ScoreController @Inject()(actorSystem: ActorSystem, val dbConfigProvider: DatabaseConfigProvider)(implicit exec: ExecutionContext) extends Controller with Query {

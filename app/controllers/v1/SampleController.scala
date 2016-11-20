@@ -8,8 +8,10 @@ import org.birdfeed.chirp.adapter.S3
 import org.birdfeed.chirp.actions.ActionWithValidApiKey
 import org.birdfeed.chirp.errors.JsonError
 import play.api.db.slick.DatabaseConfigProvider
+import play.api.libs.json.JsArray
 import play.api.mvc._
 import slick.driver.JdbcProfile
+import slick.driver.PostgresDriver.api._
 
 import scala.concurrent._
 
@@ -52,5 +54,17 @@ class SampleController @Inject()(actorSystem: ActorSystem, val dbConfigProvider:
 
   def delete(id: String) = ActionWithValidApiKey(dbConfigProvider) {
     Action.async { Sample.delete(id.toInt).map { count => Ok(count.get.toString) } }
+  }
+
+  def getScores(id: String) = ActionWithValidApiKey(dbConfigProvider) {
+    Action.async {
+      Score.where(_.sampleId === id.toInt).map { scores =>
+        val serialized = JsArray(
+          scores.get.map { score => score.jsonWrites.writes(score.asInstanceOf[score.type]) }
+        )
+
+        Ok(serialized)
+      }
+    }
   }
 }
