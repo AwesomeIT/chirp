@@ -194,7 +194,8 @@ trait Query {
             userId,
             s3Url,
             new java.sql.Date(DateTime.now.getMillis),
-            new java.sql.Date(DateTime.now.getMillis)
+            new java.sql.Date(DateTime.now.getMillis),
+            true
           )
       ).map((sample_row: Tables.Sample#TableElementType) => {
         Try(new Sample(dbConfigProvider)(sample_row))
@@ -224,16 +225,15 @@ trait Query {
     /**
       * Create an experiment
       * @param name Name
-      * @param start_date Date experiment becomes active
-      * @param end_date Date experiment becomes inactive
+      * @param userId Id of user creating the experiment
       * @return Created experiment
       */
-    def create(name: String, start_date: Date, end_date: Option[Date] = None): Future[Try[Experiment]] = {
+    def create(name: String, userId: Int): Future[Try[Experiment]] = {
       val currentDate = new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime)
       dbConfig.db.run(
         Tables.Experiment returning Tables.Experiment.map(_.id) into (
           (experiment_row, id) => experiment_row.copy(id = id)
-          ) += Tables.ExperimentRow(0, name, start_date, end_date, currentDate, currentDate)
+          ) += Tables.ExperimentRow(0, name, currentDate, currentDate, userId)
       ).map((experiment_row: Tables.Experiment#TableElementType) => {
         Try(new Experiment(dbConfigProvider)(experiment_row))
       })
@@ -256,8 +256,7 @@ trait Query {
       */
     def updateById(id: Int, row: Tables.Experiment#TableElementType): Future[Try[Int]] = {
       dbConfig.db.run(Tables.Experiment.filter(_.id === id)
-        .update(Tables.ExperimentRow(row.id, row.name, row.startDate,
-          row.endDate, row.createdAt, new java.sql.Date(java.util.Calendar.getInstance.getTime.getTime)))).map(Try(_))
+        .update(Tables.ExperimentRow(row.id, row.name, row.createdAt, row.updatedAt, row.userId)).map(Try(_)))
     }
 
     /**

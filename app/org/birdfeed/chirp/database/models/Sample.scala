@@ -11,7 +11,7 @@ import play.api.libs.json.{Json, Writes}
   * @param slickTE Slick table element from codegenerated tables
   */
 class Sample @Inject()(dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.Sample#TableElementType) extends Tables.SampleRow(
-  slickTE.id, slickTE.name, slickTE.userId, slickTE.s3Url, slickTE.createdAt, slickTE.updatedAt
+  slickTE.id, slickTE.name, slickTE.userId, slickTE.s3Url, slickTE.createdAt, slickTE.updatedAt, slickTE.active
 ) with Relation[Tables#Sample] {
 
   override def equals(rhs: Any): Boolean = {
@@ -24,6 +24,7 @@ class Sample @Inject()(dbConfigProvider: DatabaseConfigProvider)(val slickTE: Ta
         && slickTE.s3Url == s3Url
         && slickTE.createdAt.compareTo(createdAt) == 0
         && slickTE.updatedAt.compareTo(updatedAt) == 0
+        && slickTE.active == active
       )
     }
   }
@@ -32,7 +33,8 @@ class Sample @Inject()(dbConfigProvider: DatabaseConfigProvider)(val slickTE: Ta
   implicit val jsonWrites: Writes[this.type] = Writes { sample =>
     Json.obj(
       "id" -> id,
-      "name" -> name
+      "name" -> name,
+      "active" -> active
     )
   }
 }

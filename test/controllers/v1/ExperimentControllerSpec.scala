@@ -19,13 +19,18 @@ class ExperimentControllerSpec extends PlaySpec with OneServerPerSuite with Quer
 
   val testKey = Await.result(ApiKey.create(true), Duration.Inf).get.key
 
+  val uuid = java.util.UUID.randomUUID.toString
+  val user = Await.result(User.create(
+    java.util.UUID.randomUUID.toString, s"${uuid}@uuid.com", uuid, 1
+  ), Duration.Inf).get
+
   lazy val created = Await.result(
     wsClient
       .url(s"http://localhost:${port}/v1/experiment")
       .withHeaders("Chirp-Api-Key" -> testKey)
       .put(Json.obj(
         "name" -> "name",
-        "start_date" -> "10102012"
+        "user_id" -> user.id
       )), Duration.Inf)
 
 
