@@ -362,18 +362,19 @@ trait Tables {
    *  @param name Database column name SqlType(varchar), Length(255,true)
    *  @param email Database column email SqlType(varchar), Length(255,true)
    *  @param bcryptHash Database column bcrypt_hash SqlType(varchar), Length(255,true)
-   *  @param roleId Database column role_id SqlType(int4) */
-  case class UserRow(id: Int, name: String, email: String, bcryptHash: String, roleId: Int)
+   *  @param roleId Database column role_id SqlType(int4)
+   *  @param active Database column active SqlType(bool) */
+  case class UserRow(id: Int, name: String, email: String, bcryptHash: String, roleId: Int, active: Boolean)
   /** GetResult implicit for fetching UserRow objects using plain SQL queries */
-  implicit def GetResultUserRow(implicit e0: GR[Int], e1: GR[String]): GR[UserRow] = GR{
+  implicit def GetResultUserRow(implicit e0: GR[Int], e1: GR[String], e2: GR[Boolean]): GR[UserRow] = GR{
     prs => import prs._
-    UserRow.tupled((<<[Int], <<[String], <<[String], <<[String], <<[Int]))
+    UserRow.tupled((<<[Int], <<[String], <<[String], <<[String], <<[Int], <<[Boolean]))
   }
   /** Table description of table user. Objects of this class serve as prototypes for rows in queries. */
   class User(_tableTag: Tag) extends Table[UserRow](_tableTag, Some("chirp"), "user") {
-    def * = (id, name, email, bcryptHash, roleId) <> (UserRow.tupled, UserRow.unapply)
+    def * = (id, name, email, bcryptHash, roleId, active) <> (UserRow.tupled, UserRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(id), Rep.Some(name), Rep.Some(email), Rep.Some(bcryptHash), Rep.Some(roleId)).shaped.<>({r=>import r._; _1.map(_=> UserRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(id), Rep.Some(name), Rep.Some(email), Rep.Some(bcryptHash), Rep.Some(roleId), Rep.Some(active)).shaped.<>({r=>import r._; _1.map(_=> UserRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(serial), AutoInc, PrimaryKey */
     val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
@@ -385,6 +386,8 @@ trait Tables {
     val bcryptHash: Rep[String] = column[String]("bcrypt_hash", O.Length(255,varying=true))
     /** Database column role_id SqlType(int4) */
     val roleId: Rep[Int] = column[Int]("role_id")
+    /** Database column active SqlType(bool) */
+    val active: Rep[Boolean] = column[Boolean]("active")
 
     /** Foreign key referencing Role (database name user_role_fk) */
     lazy val roleFk = foreignKey("user_role_fk", roleId, Role)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.Restrict)

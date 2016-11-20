@@ -389,7 +389,7 @@ trait Query {
       dbConfig.db.run(
         Tables.User returning Tables.User.map(_.id) into (
           (user_row, id) => user_row.copy(id = id)
-          ) += Tables.UserRow(0, name, email, password.bcrypt, roleId)
+          ) += Tables.UserRow(0, name, email, password.bcrypt, roleId, true)
       ).map((user_row: Tables.User#TableElementType) => {
         Try(new User(dbConfigProvider)(user_row))
       })

@@ -19,7 +19,7 @@ import scala.util.Try
   * @param slickTE Slick table element from codegenerated tables
   */
 class User @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.User#TableElementType) extends Tables.UserRow(
-  slickTE.id, slickTE.name, slickTE.email, slickTE.bcryptHash, slickTE.roleId
+  slickTE.id, slickTE.name, slickTE.email, slickTE.bcryptHash, slickTE.roleId, slickTE.active
 ) with Relation[Tables#UserRow] with Query with Subject {
 
   val dbConfig = dbConfigProvider.get[JdbcProfile]
@@ -31,7 +31,8 @@ class User @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: 
       "id" -> id,
       "name" -> name,
       "email" -> email,
-      "role_id" -> roleId
+      "role_id" -> roleId,
+      "active" -> active
     )
   }
 
