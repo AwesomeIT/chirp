@@ -46,7 +46,7 @@ class User @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: 
     ).get.toList
   }
 
-  // TODO: Is this really the way we have to do a fucking 'join'
+  // TODO: Is this really the way we have to do a 'join'
   /**
     * Deadbolt 2 permissions listing.
     * @return

@@ -31,7 +31,7 @@ class ExperimentController @Inject()(actorSystem: ActorSystem, val dbConfigProvi
         (JsPath \ "start_date").read[String] and
         (JsPath \ "end_date").readNullable[String]
       )((name: String, startDate: String, endDate: Option[String]) => {
-        val format = new SimpleDateFormat("MMddYYYY")
+        val format = new SimpleDateFormat("ddMMYYYY")
         val sqlStartDate = new java.sql.Date(format.parse(startDate).getTime)
 
         Experiment.create(name, sqlStartDate, endDate.map { date =>
