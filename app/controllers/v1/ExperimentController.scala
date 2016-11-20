@@ -17,6 +17,7 @@ import play.api.libs.functional.syntax._
 import play.api.db.slick.DatabaseConfigProvider
 import play.libs.Json
 import slick.driver.JdbcProfile
+import slick.driver.PostgresDriver.api._
 
 
 @Singleton
@@ -57,6 +58,17 @@ class ExperimentController @Inject()(actorSystem: ActorSystem, val dbConfigProvi
 
   def delete(id: String) = ActionWithValidApiKey(dbConfigProvider) {
     Action.async { Experiment.delete(id.toInt).map { count => Ok(count.get.toString) } }
+  }
+
+  def getSamples(id: String) = ActionWithValidApiKey(dbConfigProvider) {
+    Action.async {
+      SampleExperiment.where(_.experimentId === id.toInt).map { sample_experiments =>
+        val serialized = JsArray(
+          sample_experiments.get.map { se => se.jsonWrites.writes(se.asInstanceOf[se.type]) }
+        )
+        Ok(serialized)
+      }
+    }
   }
 
   /*def update(id: String) = Action.async(BodyParsers.parse.json) { request =>

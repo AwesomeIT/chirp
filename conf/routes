@@ -24,6 +24,7 @@ POST    /v1/user/authenticate       controllers.v1.UserController.authenticate
 PUT     /v1/experiment              controllers.v1.ExperimentController.create
 GET     /v1/experiment/:id          controllers.v1.ExperimentController.retrieve(id)
 DELETE  /v1/experiment/:id          controllers.v1.ExperimentController.delete(id)
+GET     /v1/experiment/:id/samples  controllers.v1.ExperimentController.getSamples(id)
 #POST    /v1/experiment/:id          controllers.v1.ExperimentController.update(id, _)
 
 # Samples

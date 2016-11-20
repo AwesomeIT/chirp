@@ -42,9 +42,7 @@ class ExperimentControllerSpec extends PlaySpec with OneServerPerSuite with Quer
           .url(s"http://localhost:${port}/v1/experiment/${(created.json \ "id").get}")
           .withHeaders("Chirp-Api-Key" -> testKey)
           .get, Duration.Inf
-      )
-
-      retrieved.status must equal(200)
+      ).status must equal(200)
     }
   }
 
@@ -59,4 +57,13 @@ class ExperimentControllerSpec extends PlaySpec with OneServerPerSuite with Quer
     }
   }
 
+  "GET /v1/experiment/:id/samples" should {
+    "get a list of samples for an experiment" in {
+      Await.result(
+        wsClient.url(s"http://localhost:${port}/v1/experiment/${(created.json \ "id").get}/samples")
+          .withHeaders("Chirp-Api-Key" -> testKey)
+            .get, Duration.Inf
+      ).status must equal(200)
+    }
+  }
 }
