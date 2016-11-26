@@ -23,11 +23,15 @@ class SampleController @Inject() (actorSystem: ActorSystem)(implicit exec: Execu
           val meta = new ObjectMetadata
           meta.setContentLength(request.body.size)
 
-          Future { Created(Sample(
-            fileName,
-            userId,
-            bucket.putObject(fileName, bytes.toArray, meta).key
-          ).create.toJson) }
+          Future {
+            val sample = Sample(
+              fileName,
+              userId,
+              bucket.putObject(fileName, bytes.toArray, meta).key
+            ).create
+
+            Created(sample.toJson)
+          }
         }
         case None => Future(InternalServerError(jsonError("S3 file upload failed. Please try again")))
       }

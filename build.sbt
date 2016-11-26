@@ -16,18 +16,19 @@ libraryDependencies ++= Seq(
   ws,
   jdbc,
   //  Deprecated but there for warm fuzzies
-  //  "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test,
+//  "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1",
+  "org.scalatest" %% "scalatest" % "3.0.1",
 
   // Thank you @wsargent: https://github.com/playframework/scalatestplus-play/issues/55#issuecomment-259208681
-  "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1",
-  "io.github.jeremyrsmith" %% "scalamock-scalatest-support" % "3.0.0",
+    "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1",
+  //  "io.github.jeremyrsmith" %% "scalamock-scalatest-support" % "3.0.0",
   "com.h2database" % "h2" % "1.4.185",
 
 
 // ActiveRecord
   "com.github.aselab" %% "scala-activerecord" % "0.4.0-SNAPSHOT",
   "com.github.aselab" %% "scala-activerecord-play2" % "0.4.0-SNAPSHOT",
-  "com.github.aselab" %% "scala-activerecord-play2-specs" % "0.4.0-SNAPSHOT",
+//  "com.github.aselab" %% "scala-activerecord-play2-specs" % "0.4.0-SNAPSHOT",
 
   // Auth
   "com.github.t3hnar" %% "scala-bcrypt" % "2.6",
@@ -48,3 +49,5 @@ libraryDependencies ~= { _.map(_.exclude("org.slf4j", "slf4j-simple")) }
 javaOptions in Test += "-Dconfig.file=conf/application.test.conf"
 
 activerecordPlaySettings
+
+routesGenerator := InjectedRoutesGenerator

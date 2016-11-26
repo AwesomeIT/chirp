@@ -3,7 +3,7 @@ package org.birdfeed.chirp.database.models
 import be.objectify.deadbolt.scala.models.Subject
 import com.github.aselab.activerecord._
 import com.github.aselab.activerecord.dsl._
-  import com.github.t3hnar.bcrypt._
+import com.github.t3hnar.bcrypt._
 
 
 case class User(
@@ -12,7 +12,7 @@ case class User(
                  @Required var bcryptHash: String,
                  @Required implicit var roleId: Long = 2,
                  var foo: Option[String] = Option("bar")
-               ) extends ActiveRecord with Subject {
+               ) extends ActiveRecord with Subject with Timestamps {
   lazy val accessTokens = hasMany[AccessToken]
   lazy val samples = hasMany[Sample]
   lazy val scores = hasMany[Score]
@@ -21,6 +21,9 @@ case class User(
   val identifier = id.toString
 
   // TODO: These likely do not work
+  // Recursion issue here, TODO: manually make joins
+  // for one side of this and then use the helper hasManyThrough
+  // for the other side
   lazy val roles = ???
   lazy val permissions = ???
 }

@@ -23,7 +23,7 @@ class ScoreController @Inject() (actorSystem: ActorSystem)(implicit exec: Execut
         (JsPath \ "user_id").read[Long]
       )(Score.apply _)
 
-      request.body.validate.map { score => Future { Created(score.toJson) } }.get
+      request.body.validate.map { score => Future { Created(score.create.toJson) } }.get
     }
   }
 
