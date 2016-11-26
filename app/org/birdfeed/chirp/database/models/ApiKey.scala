@@ -1,25 +1,15 @@
 package org.birdfeed.chirp.database.models
 
-import com.google.inject.Inject
-import org.birdfeed.chirp.database.{Query, Relation, Tables}
-import play.api.db.slick.DatabaseConfigProvider
-import play.api.libs.json.{Json, Writes}
-import slick.driver.JdbcProfile
+import com.github.aselab.activerecord._
+import com.github.aselab.activerecord.dsl._
 
-/**
-  * ApiKey relation instance representing one row object.
-  *
-  * @param slickTE Slick table element from codegenerated tables
-  */
-class ApiKey @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.ApiKey#TableElementType) extends Tables.ApiKeyRow(
-  slickTE.key, slickTE.active) with Relation[Tables#ApiKeyRow] with Query {
+case class ApiKey(
+                   @Required var key: String,
+                   @Required var active: Boolean
+                 ) extends ActiveRecord with Timestamps
 
-  val dbConfig = dbConfigProvider.get[JdbcProfile]
-
-  implicit val jsonWrites: Writes[this.type] = Writes { user =>
-    Json.obj(
-      "key" -> key,
-      "active" -> active.toString
-    )
+object ApiKey extends ActiveRecordCompanion[ApiKey] {
+  def apply(active: Boolean): ApiKey = {
+    ApiKey(java.util.UUID.randomUUID.toString, active)
   }
 }

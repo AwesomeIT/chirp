@@ -1,24 +1,17 @@
 package controllers.v1
 
-import org.scalatestplus.play._
+import org.birdfeed.chirp.database.models.{ApiKey, User}
+import org.birdfeed.chirp.test.BaseSpec
 import play.api.libs.json._
 import play.api.libs.ws.WSClient
-import play.api.db.slick.DatabaseConfigProvider
-
-import slick.driver.JdbcProfile
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-import org.birdfeed.chirp.database.Query
-
-class UserControllerSpec extends PlaySpec with OneServerPerSuite with Query {
+class UserControllerSpec extends BaseSpec {
   val wsClient = app.injector.instanceOf[WSClient]
 
-  val dbConfigProvider = app.injector.instanceOf(classOf[DatabaseConfigProvider])
-  val dbConfig = dbConfigProvider.get[JdbcProfile]
-
-  val testKey = Await.result(ApiKey.create(true), Duration.Inf).get.key
+  val testKey = ApiKey(true).create.key
 
   "PUT /v1/user/create" should {
     "create a new user" in {
@@ -47,9 +40,7 @@ class UserControllerSpec extends PlaySpec with OneServerPerSuite with Query {
     lazy val username = java.util.UUID.randomUUID.toString
     lazy val email = s"${username}@email.com"
 
-    Await.result(
-      User.create("name", email, email, 1), Duration.Inf
-    )
+    User("name", email, email).create
 
     "authenticate with the correct credentials" in {
       val response = Await.result(
@@ -86,9 +77,7 @@ class UserControllerSpec extends PlaySpec with OneServerPerSuite with Query {
     "delete an existing user" in {
       lazy val username = java.util.UUID.randomUUID.toString
       lazy val email = s"${username}@email.com"
-      lazy val created = Await.result(
-        User.create("name", email, email, 1), Duration.Inf
-      ).get
+      lazy val created = User("name", email, email, 1).create
 
       lazy val response = Await.result(
         wsClient.url(s"http://localhost:${port}/v1/user/${created.id}")
@@ -96,8 +85,7 @@ class UserControllerSpec extends PlaySpec with OneServerPerSuite with Query {
           .delete, Duration.Inf
       )
 
-      response.status must equal(200)
-      response.body must equal("1") // record(s) deleted
+      response.status must equal(204)
     }
   }
 
