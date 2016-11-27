@@ -1,86 +1,39 @@
 package org.birdfeed.chirp.database.models
 
 import be.objectify.deadbolt.scala.models.Subject
-import com.google.inject.Inject
-import org.birdfeed.chirp.database.{Query, Relation, Tables}
-import play.api.db.slick.DatabaseConfigProvider
-import play.api.libs.json.{Json, Writes}
-import slick.driver.JdbcProfile
-import slick.driver.PostgresDriver.api._
+import com.github.aselab.activerecord._
+import com.github.aselab.activerecord.dsl._
+import com.github.t3hnar.bcrypt._
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
-import scala.util.Try
 
-/**
-  * User relation instance representing one row object.
-  *
-  * @param slickTE Slick table element from codegenerated tables
-  */
-class User @Inject()(val dbConfigProvider: DatabaseConfigProvider)(val slickTE: Tables.User#TableElementType) extends Tables.UserRow(
-  slickTE.id, slickTE.name, slickTE.email, slickTE.bcryptHash, slickTE.roleId, slickTE.active
-) with Relation[Tables#UserRow] with Query with Subject {
-
-  val dbConfig = dbConfigProvider.get[JdbcProfile]
+case class User(
+                 @Required var name: String,
+                 @Email @Unique var email: String,
+                 @Required var bcryptHash: String,
+                 @Required implicit var roleId: Long = 2,
+                 var foo: Option[String] = Option("bar")
+               ) extends ActiveRecord with Subject with Timestamps {
+  lazy val accessTokens = hasMany[AccessToken]
+  lazy val samples = hasMany[Sample]
+  lazy val scores = hasMany[Score]
+  lazy val role = belongsTo[Role]
 
   val identifier = id.toString
 
-  implicit val jsonWrites: Writes[this.type] = Writes { user =>
-    Json.obj(
-      "id" -> id,
-      "name" -> name,
-      "email" -> email,
-      "role_id" -> roleId,
-      "active" -> active
-    )
+  // TODO: These likely do not work
+  // Recursion issue here, TODO: manually make joins
+  // for one side of this and then use the helper hasManyThrough
+  // for the other side
+  lazy val roles = ???
+  lazy val permissions = ???
+}
+
+object User extends ActiveRecordCompanion[User] {
+  def apply(name: String, email: String, password: String): User = {
+    User(name, email, password.bcrypt, 2)
   }
 
-  // TODO: Maybe asynchronously handle these?
-  /**
-    * Deadbolt 2 roles listing.
-    * @return
-    */
-  def roles: List[be.objectify.deadbolt.scala.models.Role] = {
-    Await.result(
-      Role.where(_.id == roleId), Duration.Inf
-    ).get.toList
+  def authenticate(email: String, password: String): Option[User] = {
+    this.findBy("email", email).filter { user => password.isBcrypted(user.bcryptHash) }
   }
-
-  // TODO: Is this really the way we have to do a 'join'
-  /**
-    * Deadbolt 2 permissions listing.
-    * @return
-    */
-  def permissions: List[be.objectify.deadbolt.scala.models.Permission] = {
-    val permissionIds = Await.result(
-      RolePermission.where(_.roleId == roleId).map(_.get.map(_.permissionId)),
-      Duration.Inf
-    )
-
-    Await.result(
-      Permission.where { permission => permissionIds.contains(permission.id) },
-      Duration.Inf
-    ).get.toList
-  }
-
-  /**
-    * Query database for updated fields.
-    * @return A new instance of this relation object.
-    */
-  def reload: Future[Try[User]] = { User.find(slickTE.id) }
-
-  /**
-    * Fetch samples associated with a user
-    * @return Collection of Sample relations
-    */
-  def samples: Future[Try[Seq[Sample]]] = {
-    Sample.where(_.userId === slickTE.id)
-  }
-
-  /**
-    * Delete this instance of a user record
-    * @return Potentially the ID of the deleted
-    */
-  def delete: Future[Try[Int]] = { User.delete(id) }
 }

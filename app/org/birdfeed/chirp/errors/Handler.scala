@@ -1,13 +1,12 @@
 package org.birdfeed.chirp.errors
 
+import com.google.inject.Singleton
+import org.postgresql.util.PSQLException
 import play.api.http.HttpErrorHandler
-import play.api.mvc._
 import play.api.mvc.Results._
+import play.api.mvc._
 
 import scala.concurrent._
-import com.google.inject.Singleton
-import org.birdfeed.chirp.database.AuthenticationFailedException
-import org.postgresql.util.PSQLException
 
 @Singleton
 class Handler extends HttpErrorHandler with JsonError {
@@ -23,11 +22,12 @@ class Handler extends HttpErrorHandler with JsonError {
       case ex: PSQLException => {
         BadRequest(jsonError("A database error has occurred.", ex))
       }
-      case ex: AuthenticationFailedException => {
-        Unauthorized(jsonError("Invalid credentials.", ex))
-      }
+        // TODO: Fix this
+//      case ex: AuthenticationFailedException => {
+//        Unauthorized(jsonError("Invalid credentials.", ex))
+//      }
       case ex: Exception => {
-        InternalServerError(jsonError("Critical error."))
+        InternalServerError(jsonError("A ISE has occurred.", ex))
     }})
   }
 }

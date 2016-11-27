@@ -1,69 +1,62 @@
 package controllers.v1
 
-import java.sql.Date
-import java.text.SimpleDateFormat
+import javax.inject.Inject
 
-import com.google.inject._
-
-import scala.util._
-import scala.concurrent._
 import akka.actor.ActorSystem
-import org.birdfeed.chirp.database.{Query, Tables}
-import org.birdfeed.chirp.database.models.Experiment
+import com.google.inject._
 import org.birdfeed.chirp.actions.ActionWithValidApiKey
-import play.api.mvc._
-import play.api.libs.json._
+import org.birdfeed.chirp.database.models.Experiment
 import play.api.libs.functional.syntax._
-import play.api.db.slick.DatabaseConfigProvider
-import play.libs.Json
-import slick.driver.JdbcProfile
-import slick.driver.PostgresDriver.api._
+import play.api.libs.json._
+import play.api.mvc._
 
+import scala.concurrent._
 
 @Singleton
-class ExperimentController @Inject()(actorSystem: ActorSystem, val dbConfigProvider: DatabaseConfigProvider)(implicit exec: ExecutionContext) extends Controller with Query {
+class ExperimentController @Inject() (actorSystem: ActorSystem)(implicit exec: ExecutionContext) extends Controller {
 
-  val dbConfig = dbConfigProvider.get[JdbcProfile]
-
-  def create = ActionWithValidApiKey(dbConfigProvider) {
+  def create = ActionWithValidApiKey {
     Action.async(BodyParsers.parse.json) { request =>
-      implicit val createReads: Reads[Future[Result]] = (
+      implicit val createReads: Reads[Experiment] = (
         (JsPath \ "name").read[String] and
-        (JsPath \ "user_id").read[Int]
-      )((name: String, user_id: Int) => {
-        Experiment.create(name, user_id).map { created =>
-          val cGet = created.get
-          Created(cGet.jsonWrites.writes(cGet))
+        (JsPath \ "user_id").read[Long]
+      )(Experiment.apply _)
+
+      request.body.validate.map { experiment =>
+        Future { Created(experiment.create.toJson) } }.get
+    }
+  }
+
+  def retrieve(id: String) = ActionWithValidApiKey {
+    Action.async {
+      Experiment.find(id.toInt) match {
+        case Some(experiment) => Future { Ok(experiment.toJson) }
+        case None => Future { NotFound }
+      }
+    }
+  }
+
+  def delete(id: String) = ActionWithValidApiKey {
+    Action.async {
+      Experiment.find(id.toInt) match {
+        case Some(experiment) => {
+          if (experiment.delete) Future { NoContent } else Future { NotFound }
         }
-      })
-
-      request.body.validate.get
-    }
-  }
-
-  def retrieve(id: String) = ActionWithValidApiKey(dbConfigProvider) {
-    Action.async {
-      Experiment.find(id.toInt).map { retrieved =>
-        val rGet = retrieved.get
-        Ok(rGet.jsonWrites.writes(rGet))
+        case None => Future { NotFound }
       }
     }
   }
-
-  def delete(id: String) = ActionWithValidApiKey(dbConfigProvider) {
-    Action.async { Experiment.delete(id.toInt).map { count => Ok(count.get.toString) } }
-  }
-
-  def getSamples(id: String) = ActionWithValidApiKey(dbConfigProvider) {
-    Action.async {
-      SampleExperiment.where(_.experimentId === id.toInt).map { sample_experiments =>
-        val serialized = JsArray(
-          sample_experiments.get.map { se => se.jsonWrites.writes(se.asInstanceOf[se.type]) }
-        )
-        Ok(serialized)
-      }
-    }
-  }
+//
+//  def getSamples(id: String) = ActionWithValidApiKey(dbConfigProvider) {
+//    Action.async {
+//      SampleExperiment.where(_.experimentId === id.toInt).map { sample_experiments =>
+//        val serialized = JsArray(
+//          sample_experiments.get.map { se => se.jsonWrites.writes(se.asInstanceOf[se.type]) }
+//        )
+//        Ok(serialized)
+//      }
+//    }
+//  }
 
   /*def update(id: String) = Action.async(BodyParsers.parse.json) { request =>
     val updateReads: Reads[Future[Try[Experiment]]] = (
@@ -100,6 +93,3 @@ class ExperimentController @Inject()(actorSystem: ActorSystem, val dbConfigProvi
     dtoWithMarshallingSingle(updateReads, request.body, Ok)
   }*/
 }
-
-
-

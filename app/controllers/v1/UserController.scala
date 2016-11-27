@@ -1,79 +1,70 @@
 package controllers.v1
 
+import akka.actor.ActorSystem
 import com.google.inject._
+import org.birdfeed.chirp.actions.ActionWithValidApiKey
+import org.birdfeed.chirp.database.models.User
+import play.api.libs.functional.syntax._
+import play.api.libs.json._
+import play.api.mvc._
 
 import scala.concurrent._
-import akka.actor.ActorSystem
-import play.api.mvc._
-import play.api.libs.json._
-import play.api.libs.functional.syntax._
-import org.birdfeed.chirp.database.{Query, Relation}
-import org.birdfeed.chirp.database.models.User
-import org.birdfeed.chirp.actions.ActionWithValidApiKey
-import play.api.db.slick.DatabaseConfigProvider
-import slick.driver.JdbcProfile
-import slick.driver.PostgresDriver.api._
+import com.github.t3hnar.bcrypt._
 
-import scala.util._
 
 @Singleton
-class UserController @Inject()(actorSystem: ActorSystem, val dbConfigProvider: DatabaseConfigProvider)(implicit exec: ExecutionContext) extends Controller with Query {
+class UserController @Inject()(actorSystem: ActorSystem)(implicit exec: ExecutionContext) extends Controller {
 
-  val dbConfig = dbConfigProvider.get[JdbcProfile]
 
-  def authenticate = ActionWithValidApiKey(dbConfigProvider) {
+  def authenticate = ActionWithValidApiKey {
     Action.async(BodyParsers.parse.json) { request =>
-      implicit val authenticateReads: Reads[Future[Result]] = (
+      implicit val authenticateReads: Reads[Option[Result]] = (
         (JsPath \ "email").read[String] and
         (JsPath \ "password").read[String]
       )((email: String, password: String) => {
-        User.authenticate(email, password).map { user =>
-          val uGet = user.get
-          Ok(uGet.jsonWrites.writes(uGet))
-        }
+        User.authenticate(email, password)
+          .map { user => Ok(user.toJson("id", "name", "email")) }
       })
 
-      request.body.validate.get
+      request.body.validate.get match {
+        case Some(result) => Future { result }
+        case None => Future { Unauthorized }
+      }
     }
   }
 
-  def create = ActionWithValidApiKey(dbConfigProvider) {
+  def create = ActionWithValidApiKey {
     Action.async(BodyParsers.parse.json) { request =>
       implicit val createReads: Reads[Future[Result]] = (
         (JsPath \ "name").read[String] and
         (JsPath \ "email").read[String] and
         (JsPath \ "password").read[String]
       )((name: String, email: String, password: String) => {
-        User.create(name, email, password, 2).map { created =>
-          val cGet = created.get
-          Created(cGet.jsonWrites.writes(cGet))
-        }
+        Future { Created(
+          User(name, email, password, 2).create.toJson("id", "name", "email")
+        )}
       })
 
-      request.body.validate.get
+      request.body.validate(createReads).get
     }
   }
 
-  def retrieve(id: String) = ActionWithValidApiKey(dbConfigProvider) {
+  def retrieve(id: String) = ActionWithValidApiKey {
     Action.async {
-      User.find(id.toInt).map { retrieved =>
-        val rGet = retrieved.get
-        Ok(rGet.jsonWrites.writes(rGet))
+      User.find(id.toInt) match {
+        case Some(user) => Future { Ok(user.toJson("id", "name", "email")) }
+        case None => Future { NotFound }
       }
     }
   }
 
-  def delete(id: String) = ActionWithValidApiKey(dbConfigProvider) {
-    Action.async { User.delete(id.toInt).map { count => Ok(count.get.toString) } }
-  }
-
-  def getExperiments(id: String) = ActionWithValidApiKey(dbConfigProvider) {
+  def delete(id: String) = ActionWithValidApiKey {
     Action.async {
-      Experiment.where(_.userId === id.toInt).map { retrieved =>
-        val serialized = JsArray(
-          retrieved.get.map { experiment => experiment.jsonWrites.writes(experiment.asInstanceOf[experiment.type]) }
-        )
-        Ok(serialized)
+      User.find(id.toInt) match {
+        case Some(user) => if (user.delete) {
+          Future(NoContent)
+        } else { Future(BadRequest) }
+        case None => Future(NotFound)
       }
     }
   }

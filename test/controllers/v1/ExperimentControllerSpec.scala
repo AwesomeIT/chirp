@@ -1,28 +1,21 @@
 package controllers.v1
 
-import org.birdfeed.chirp.database.Query
-import org.joda.time.DateTime
+import org.birdfeed.chirp.database.models.{ApiKey, User}
 import org.scalatestplus.play._
-import play.api.db.slick.DatabaseConfigProvider
 import play.api.libs.json._
 import play.api.libs.ws.WSClient
-import slick.driver.JdbcProfile
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-class ExperimentControllerSpec extends PlaySpec with OneServerPerSuite with Query {
+class ExperimentControllerSpec extends PlaySpec with OneServerPerSuite {
   val wsClient = app.injector.instanceOf[WSClient]
-
-  val dbConfigProvider = app.injector.instanceOf(classOf[DatabaseConfigProvider])
-  val dbConfig = dbConfigProvider.get[JdbcProfile]
-
-  val testKey = Await.result(ApiKey.create(true), Duration.Inf).get.key
+  val testKey = ApiKey(true).create.key
 
   val uuid = java.util.UUID.randomUUID.toString
-  val user = Await.result(User.create(
+  lazy val user = User(
     java.util.UUID.randomUUID.toString, s"${uuid}@uuid.com", uuid, 1
-  ), Duration.Inf).get
+  ).create
 
   lazy val created = Await.result(
     wsClient
@@ -42,7 +35,7 @@ class ExperimentControllerSpec extends PlaySpec with OneServerPerSuite with Quer
 
   "GET /v1/experiment/:id" should {
     "retrieve a created experiment" in {
-      lazy val retrieved = Await.result(
+      Await.result(
         wsClient
           .url(s"http://localhost:${port}/v1/experiment/${(created.json \ "id").get}")
           .withHeaders("Chirp-Api-Key" -> testKey)
@@ -58,17 +51,17 @@ class ExperimentControllerSpec extends PlaySpec with OneServerPerSuite with Quer
           .withHeaders("Chirp-Api-Key" -> testKey)
           .delete,
         Duration.Inf
-      ).body.toInt must equal(1)
+      ).status must equal(204)
     }
   }
 
-  "GET /v1/experiment/:id/samples" should {
-    "get a list of samples for an experiment" in {
-      Await.result(
-        wsClient.url(s"http://localhost:${port}/v1/experiment/${(created.json \ "id").get}/samples")
-          .withHeaders("Chirp-Api-Key" -> testKey)
-            .get, Duration.Inf
-      ).status must equal(200)
-    }
-  }
+//  "GET /v1/experiment/:id/samples" should {
+//    "get a list of samples for an experiment" in {
+//      Await.result(
+//        wsClient.url(s"http://localhost:${port}/v1/experiment/${(created.json \ "id").get}/samples")
+//          .withHeaders("Chirp-Api-Key" -> testKey)
+//            .get, Duration.Inf
+//      ).status must equal(200)
+//    }
+//  }
 }

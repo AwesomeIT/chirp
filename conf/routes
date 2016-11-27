@@ -7,33 +7,33 @@ GET     /                           controllers.HomeController.index
 # An example controller showing how to use dependency injection
 GET     /count                      controllers.CountController.count
 # An example controller showing how to write asynchronous code
-GET     /message                    controllers.AsyncController.message
+GET     /message                    @controllers.AsyncController.message
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+GET     /assets/*file               @controllers.Assets.versioned(path="/public", file: Asset)
 
 # Chirp API routes
 
 # Users and authentication
-PUT     /v1/user                    controllers.v1.UserController.create
-GET     /v1/user/:id                controllers.v1.UserController.retrieve(id)
-DELETE  /v1/user/:id                controllers.v1.UserController.delete(id)
-GET     /v1/user/:id/experiments    controllers.v1.UserController.getExperiments(id)
-POST    /v1/user/authenticate       controllers.v1.UserController.authenticate
+PUT     /v1/user                    @controllers.v1.UserController.create
+GET     /v1/user/:id                @controllers.v1.UserController.retrieve(id)
+DELETE  /v1/user/:id                @controllers.v1.UserController.delete(id)
 
-# Experiments
-PUT     /v1/experiment              controllers.v1.ExperimentController.create
-GET     /v1/experiment/:id          controllers.v1.ExperimentController.retrieve(id)
-DELETE  /v1/experiment/:id          controllers.v1.ExperimentController.delete(id)
-GET     /v1/experiment/:id/samples  controllers.v1.ExperimentController.getSamples(id)
-#POST    /v1/experiment/:id          controllers.v1.ExperimentController.update(id, _)
+POST    /v1/user/authenticate       @controllers.v1.UserController.authenticate
+
+## Experiments
+PUT     /v1/experiment       @controllers.v1.ExperimentController.create
+GET     /v1/experiment/:id          @controllers.v1.ExperimentController.retrieve(id)
+DELETE  /v1/experiment/:id          @controllers.v1.ExperimentController.delete(id)
+##POST    /v1/experiment/:id          controllers.v1.ExperimentController.update(id, _)
+
 
 # Samples
-PUT     /v1/sample                  controllers.v1.SampleController.create(file_name: String, user_id: Int)
-GET     /v1/sample/:id              controllers.v1.SampleController.retrieve(id)
-DELETE  /v1/sample/:id              controllers.v1.SampleController.delete(id)
-GET     /v1/sample/:id/scores       controllers.v1.SampleController.getScores(id)
+PUT     /v1/sample                  @controllers.v1.SampleController.create(file_name: String, user_id: Int)
+GET     /v1/sample/:id              @controllers.v1.SampleController.retrieve(id)
+DELETE  /v1/sample/:id              @controllers.v1.SampleController.delete(id)
 
-#Scores
-PUT     /v1/score                   controllers.v1.ScoreController.create
-GET     /v1/score/:id               controllers.v1.ScoreController.retrieve(id)
+
+## Scores
+PUT     /v1/score                   @controllers.v1.ScoreController.create
+GET     /v1/score/:id               @controllers.v1.ScoreController.retrieve(id)
