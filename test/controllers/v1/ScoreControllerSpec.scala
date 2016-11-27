@@ -13,12 +13,12 @@ class ScoreControllerSpec extends PlaySpec with GuiceOneServerPerSuite {
   val wsClient = app.injector.instanceOf[WSClient]
   var testKey = ApiKey(true).create.key
 
-  lazy val experiment = Experiment(java.util.UUID.randomUUID.toString).create
 
   lazy val uuid = java.util.UUID.randomUUID.toString
   lazy val user = User(
     java.util.UUID.randomUUID.toString, s"${uuid}@uuid.com", uuid, 1
   ).create
+  lazy val experiment = Experiment(java.util.UUID.randomUUID.toString, user.id).create
 
   lazy val sample = Sample(
     "test", user.id, "moo.wav"

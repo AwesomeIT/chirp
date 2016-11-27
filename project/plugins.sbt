@@ -45,3 +45,6 @@ libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "9.4-1200-jdbc41"
 )
 libraryDependencies ~= { _.map(_.exclude("org.slf4j", "slf4j-simple")) }
+
+// Ensime introspection
+addSbtPlugin("org.ensime" % "sbt-ensime" % "1.12.0")

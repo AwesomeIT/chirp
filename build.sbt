@@ -3,8 +3,6 @@ version := "1.0-SNAPSHOT"
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 scalaVersion := "2.11.7"
 
-//fork in (Test,run) := false
-
 resolvers ++= Seq(
   Resolver.bintrayRepo("jeremyrsmith", "maven"),
   Resolver.sonatypeRepo("snapshots")
@@ -22,13 +20,12 @@ libraryDependencies ++= Seq(
   // Thank you @wsargent: https://github.com/playframework/scalatestplus-play/issues/55#issuecomment-259208681
     "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1",
   //  "io.github.jeremyrsmith" %% "scalamock-scalatest-support" % "3.0.0",
-  "com.h2database" % "h2" % "1.4.185",
+    "com.h2database" % "h2" % "1.4.185",
 
 
 // ActiveRecord
   "com.github.aselab" %% "scala-activerecord" % "0.4.0-SNAPSHOT",
   "com.github.aselab" %% "scala-activerecord-play2" % "0.4.0-SNAPSHOT",
-//  "com.github.aselab" %% "scala-activerecord-play2-specs" % "0.4.0-SNAPSHOT",
 
   // Auth
   "com.github.t3hnar" %% "scala-bcrypt" % "2.6",
