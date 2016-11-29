@@ -33,7 +33,10 @@ object User extends ActiveRecordCompanion[User] {
     User(name, email, password.bcrypt, 2)
   }
 
-  def authenticate(email: String, password: String): Option[User] = {
-    this.findBy("email", email).filter { user => password.isBcrypted(user.bcryptHash) }
+  def authenticate(email: String, password: String): Option[AccessToken] = {
+    this.findBy("email", email)
+        .collect {
+          case user if password.isBcrypted(user.bcryptHash) => AccessToken.mint(user.id).create
+        }
   }
 }

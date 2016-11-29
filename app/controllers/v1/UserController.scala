@@ -23,7 +23,7 @@ class UserController @Inject()(actorSystem: ActorSystem)(implicit exec: Executio
         (JsPath \ "password").read[String]
       )((email: String, password: String) => {
         User.authenticate(email, password)
-          .map { user => Ok(user.toJson("id", "name", "email")) }
+          .map { token => Ok(token.toJson) }
       })
 
       request.body.validate.get match {
