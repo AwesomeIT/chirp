@@ -13,6 +13,8 @@ case class AccessToken(
                   @Required var expiryDate: Date
                  ) extends ActiveRecord with Timestamps {
   lazy val user = belongsTo[User]
+
+  def stillAlive: Boolean = { new DateTime(expiryDate).isAfter(DateTime.now) }
 }
 
 object AccessToken extends ActiveRecordCompanion[AccessToken] {
