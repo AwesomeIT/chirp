@@ -14,7 +14,6 @@ import scala.concurrent._
 @Singleton
 class UserController @Inject()(actorSystem: ActorSystem)(implicit exec: ExecutionContext) extends Controller {
 
-
   def authenticate = ActionWithValidApiKey {
     Action.async(BodyParsers.parse.json) { request =>
       implicit val authenticateReads: Reads[Option[Result]] = (
@@ -33,7 +32,6 @@ class UserController @Inject()(actorSystem: ActorSystem)(implicit exec: Executio
   }
 
   def refresh = ActionWithValidApiKey {
-
     Action.async(BodyParsers.parse.json) { request =>
       implicit val refreshReads: Reads[Option[AccessToken]] =
         (JsPath \ "refreshToken").read[String].map(User.refresh)

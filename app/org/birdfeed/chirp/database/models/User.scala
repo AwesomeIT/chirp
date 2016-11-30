@@ -16,16 +16,14 @@ case class User(
   lazy val accessTokens = hasMany[AccessToken]
   lazy val samples = hasMany[Sample]
   lazy val scores = hasMany[Score]
-  lazy val role = belongsTo[Role]
+
+  lazy val modelRoles = hasAndBelongsToMany[Role]
+  lazy val modelPermissions = hasManyThrough[Permission, Role](modelRoles)
 
   val identifier = id.toString
 
-  // TODO: These likely do not work
-  // Recursion issue here, TODO: manually make joins
-  // for one side of this and then use the helper hasManyThrough
-  // for the other side
-  lazy val roles = ???
-  lazy val permissions = ???
+  def roles = modelRoles.toList
+  def permissions = modelPermissions.toList
 }
 
 object User extends ActiveRecordCompanion[User] {
@@ -42,7 +40,7 @@ object User extends ActiveRecordCompanion[User] {
 
   def refresh(refreshToken: String): Option[AccessToken] = {
     AccessToken.findBy("refreshToken", refreshToken).collect {
-      case token if User.find(token.userId) => AccessToken.mint(token.userId).create
+      case token if User.find(token.userId).isEmpty => AccessToken.mint(token.userId).create
     }
   }
 }
