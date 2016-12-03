@@ -20,14 +20,14 @@ class Handler extends HttpErrorHandler with JsonError {
   def onServerError(request: RequestHeader, exception: Throwable) = {
     Future.successful(exception match {
       case ex: PSQLException => {
-        BadRequest(jsonError("A database error has occurred.", ex))
+        BadRequest(jsonException("A database error has occurred.", ex))
       }
         // TODO: Fix this
 //      case ex: AuthenticationFailedException => {
-//        Unauthorized(jsonError("Invalid credentials.", ex))
+//        Unauthorized(jsonException("Invalid credentials.", ex))
 //      }
       case ex: Exception => {
-        InternalServerError(jsonError("A ISE has occurred.", ex))
+        InternalServerError(jsonException("An ISE has occurred.", ex))
     }})
   }
 }

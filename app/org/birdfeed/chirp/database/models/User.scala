@@ -10,22 +10,18 @@ case class User(
                  @Required var name: String,
                  @Email @Unique var email: String,
                  @Required var bcryptHash: String,
-                 @Required implicit var roleId: Long = 2,
-                 var foo: Option[String] = Option("bar")
+                 @Required var roleId: Long = 2
                ) extends ActiveRecord with Subject with Timestamps {
   lazy val accessTokens = hasMany[AccessToken]
   lazy val samples = hasMany[Sample]
   lazy val scores = hasMany[Score]
+
   lazy val role = belongsTo[Role]
 
   val identifier = id.toString
 
-  // TODO: These likely do not work
-  // Recursion issue here, TODO: manually make joins
-  // for one side of this and then use the helper hasManyThrough
-  // for the other side
-  lazy val roles = ???
-  lazy val permissions = ???
+  def roles = role.toArray.toList
+  def permissions = role.permissions.toList
 }
 
 object User extends ActiveRecordCompanion[User] {
@@ -33,7 +29,16 @@ object User extends ActiveRecordCompanion[User] {
     User(name, email, password.bcrypt, 2)
   }
 
-  def authenticate(email: String, password: String): Option[User] = {
-    this.findBy("email", email).filter { user => password.isBcrypted(user.bcryptHash) }
+  def authenticate(email: String, password: String): Option[AccessToken] = {
+    this.findBy("email", email)
+      .collect {
+        case user if password.isBcrypted(user.bcryptHash) => AccessToken.mint(user.id).create
+      }
+  }
+
+  def refresh(refreshToken: String): Option[AccessToken] = {
+    AccessToken.findBy("refreshToken", refreshToken).collect {
+      case token if User.find(token.userId).isEmpty => AccessToken.mint(token.userId).create
+    }
   }
 }
