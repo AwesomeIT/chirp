@@ -1,18 +1,13 @@
 package controllers.v1
 
-import org.birdfeed.chirp.database.models.{ApiKey, User}
-import org.scalatest.DoNotDiscover
-import org.scalatestplus.play.guice.{GuiceOneServerPerSuite, GuiceOneServerPerTest}
-import org.scalatestplus.play.{ConfiguredServer, OneServerPerSuite, OneServerPerTest, PlaySpec}
+import org.birdfeed.chirp.database.models.User
+import org.birdfeed.chirp.test.BaseSpec
 import play.api.libs.json._
-import play.api.libs.ws.WSClient
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-class UserControllerSpec extends PlaySpec with GuiceOneServerPerSuite {
-  val wsClient = app.injector.instanceOf[WSClient]
-  var testKey = ApiKey(true).create.key
+class UserControllerSpec extends BaseSpec {
 
   "PUT /v1/user/create" should {
     "create a new user" in {

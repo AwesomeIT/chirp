@@ -10,20 +10,18 @@ case class User(
                  @Required var name: String,
                  @Email @Unique var email: String,
                  @Required var bcryptHash: String,
-                 @Required implicit var roleId: Long = 2,
-                 var foo: Option[String] = Option("bar")
+                 @Required var roleId: Long = 2
                ) extends ActiveRecord with Subject with Timestamps {
   lazy val accessTokens = hasMany[AccessToken]
   lazy val samples = hasMany[Sample]
   lazy val scores = hasMany[Score]
 
-  lazy val modelRoles = hasAndBelongsToMany[Role]
-  lazy val modelPermissions = hasManyThrough[Permission, Role](modelRoles)
+  lazy val role = belongsTo[Role]
 
   val identifier = id.toString
 
-  def roles = modelRoles.toList
-  def permissions = modelPermissions.toList
+  def roles = role.toArray.toList
+  def permissions = role.permissions.toList
 }
 
 object User extends ActiveRecordCompanion[User] {

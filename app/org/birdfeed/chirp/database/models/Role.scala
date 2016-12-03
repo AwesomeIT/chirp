@@ -6,7 +6,7 @@ import com.github.aselab.activerecord.dsl._
 case class Role(
                  @Required var name: String
                ) extends ActiveRecord with be.objectify.deadbolt.scala.models.Role {
-  lazy val users = hasAndBelongsToMany[User]
+  lazy val users = hasMany[User]
   lazy val permissions = hasAndBelongsToMany[Permission]
 }
 

@@ -13,11 +13,11 @@ case class ActionWithValidApiKey[A] (action: Action[A]) extends Action[A] with J
       case Some(headerToken) => {
         if (
           ApiKey.findBy("key", headerToken).isEmpty
-        ) Future.successful(Results.Unauthorized) else action(request)
+        ) Future.successful(Results.Unauthorized(
+          jsonError("You provided an invalid API key.")
+        )) else action(request)
       }
-      case None => Future.successful(Results.BadRequest(
-        jsonError("Please provide a valid Chirp-Api-Key in your request headers.")
-      ))
+      case None => Future.successful(Results.BadRequest)
     }
   }
 

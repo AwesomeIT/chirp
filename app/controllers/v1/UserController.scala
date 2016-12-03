@@ -1,6 +1,8 @@
 package controllers.v1
 
 import akka.actor.ActorSystem
+import be.objectify.deadbolt.scala.ActionBuilders
+import be.objectify.deadbolt.scala.models.PatternType
 import com.google.inject._
 import org.birdfeed.chirp.actions.ActionWithValidApiKey
 import org.birdfeed.chirp.database.models.{AccessToken, User}
@@ -12,7 +14,7 @@ import scala.concurrent._
 
 
 @Singleton
-class UserController @Inject()(actorSystem: ActorSystem)(implicit exec: ExecutionContext) extends Controller {
+class UserController @Inject()(actorSystem: ActorSystem, actionBuilder: ActionBuilders)(implicit exec: ExecutionContext) extends Controller {
 
   def authenticate = ActionWithValidApiKey {
     Action.async(BodyParsers.parse.json) { request =>
@@ -44,7 +46,7 @@ class UserController @Inject()(actorSystem: ActorSystem)(implicit exec: Executio
   }
 
   def create = ActionWithValidApiKey {
-    Action.async(BodyParsers.parse.json) { request =>
+    actionBuilder.PatternAction("user.write", PatternType.EQUALITY).defaultHandler()(BodyParsers.parse.json) { request =>
       implicit val createReads: Reads[Future[Result]] = (
         (JsPath \ "name").read[String] and
         (JsPath \ "email").read[String] and
@@ -60,7 +62,7 @@ class UserController @Inject()(actorSystem: ActorSystem)(implicit exec: Executio
   }
 
   def retrieve(id: String) = ActionWithValidApiKey {
-    Action.async {
+    actionBuilder.PatternAction("user", PatternType.EQUALITY).defaultHandler() {
       User.find(id.toInt) match {
         case Some(user) => Future { Ok(user.toJson("id", "name", "email")) }
         case None => Future { NotFound }
@@ -69,7 +71,7 @@ class UserController @Inject()(actorSystem: ActorSystem)(implicit exec: Executio
   }
 
   def delete(id: String) = ActionWithValidApiKey {
-    Action.async {
+    actionBuilder.PatternAction("user.write", PatternType.EQUALITY).defaultHandler() {
       User.find(id.toInt) match {
         case Some(user) => if (user.delete) {
           Future(NoContent)

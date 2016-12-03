@@ -1,17 +1,13 @@
 package controllers.v1
 
-import org.birdfeed.chirp.database.models.{ApiKey, User}
-import org.scalatestplus.play._
+import org.birdfeed.chirp.database.models.User
+import org.birdfeed.chirp.test.BaseSpec
 import play.api.libs.json._
-import play.api.libs.ws.WSClient
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-class ExperimentControllerSpec extends PlaySpec with OneServerPerSuite {
-  val wsClient = app.injector.instanceOf[WSClient]
-  val testKey = ApiKey(true).create.key
-
+class ExperimentControllerSpec extends BaseSpec {
   val uuid = java.util.UUID.randomUUID.toString
   lazy val user = User(
     java.util.UUID.randomUUID.toString, s"${uuid}@uuid.com", uuid, 1

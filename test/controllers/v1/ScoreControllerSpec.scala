@@ -1,18 +1,13 @@
 package controllers.v1
 
-import org.birdfeed.chirp.database.models.{ApiKey, Experiment, Sample, User}
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import org.birdfeed.chirp.database.models.{Experiment, Sample, User}
+import org.birdfeed.chirp.test.BaseSpec
 import play.api.libs.json._
-import play.api.libs.ws.WSClient
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-class ScoreControllerSpec extends PlaySpec with GuiceOneServerPerSuite {
-  val wsClient = app.injector.instanceOf[WSClient]
-  var testKey = ApiKey(true).create.key
-
+class ScoreControllerSpec extends BaseSpec {
 
   lazy val uuid = java.util.UUID.randomUUID.toString
   lazy val user = User(
