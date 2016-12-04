@@ -9,7 +9,6 @@ class ChirpHandlerCache @Inject()(val defaultHandler: ChirpDeadboltHandler) exte
   case class ChirpKey(name: String) extends HandlerKey
 
   object HandlerKeys { val defaultHandler = ChirpKey("defaultHandler") }
-//  val defaultHandler: DeadboltHandler = new ChirpDeadboltHandler
 
   // HandlerKeys is an user-defined object, containing instances
   // of a case class that extends HandlerKey
