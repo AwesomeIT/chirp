@@ -1,14 +1,11 @@
 package org.birdfeed.chirp.initializers
 
-import akka.actor.ActorSystem
 import com.google.inject.{Inject, Singleton}
-import org.birdfeed.chirp.database.models.{AccessToken, Permission, Role, User}
-import play.api.{Application, Configuration, Environment, Mode}
-import play.api.db.Database
-import com.github.aselab.activerecord._
-import com.github.aselab.activerecord.dsl._
 import org.birdfeed.chirp.database.SchemaTables
-import org.joda.time.DateTime /* Do not remove, it scopes an implicit value */
+import org.birdfeed.chirp.database.models.{AccessToken, Permission, Role, User}
+import org.joda.time.DateTime
+import play.api.db.Database
+import play.api.{Environment, Mode}
 
 /**
   * Map permissions from models.
@@ -17,28 +14,14 @@ import org.joda.time.DateTime /* Do not remove, it scopes an implicit value */
   * hopefully Scala-ActiveRecord keeps a list of some sort
   *
   * http://stackoverflow.com/questions/19118283/how-can-i-get-all-object-vals-and-subobject-vals-using-reflection-in-scala
-  *
-  * Q: Why do we DI so many things?
-  * A: The anatomy of a play application is not monolithic. We
-  * have to wait for larger components to do some database operations.
-  *
-  * @param app Initialized Play Application
-  *            (this is important as it ensures everything
-  *            to do with the DB connection pool is
-  *            bound at start, so it is dependency queued
-  *            to run immediately after the Play application
-  *            is ready)
   */
 @Singleton
 class Permissions @Inject()(
-  val app: Application,
   val db: Database,
-  actorSystem: ActorSystem,
-  conf: Configuration,
-  env: Environment,
-  permission: Permission,
-  role: Role
+  env: Environment
 ) {
+
+  SchemaTables.initialize
 
   Permission.deleteAll
   Role.deleteAll
@@ -96,4 +79,6 @@ class Permissions @Inject()(
       "freshy",
       DateTime.now.plusDays(1).toDate), "userId", "token", "refreshToken", "expiryDate")
   }
+
+  SchemaTables.cleanup
 }
