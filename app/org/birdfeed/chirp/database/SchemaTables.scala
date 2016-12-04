@@ -1,9 +1,10 @@
 package org.birdfeed.chirp.database
 
 import com.github.aselab.activerecord._
-import com.github.aselab.activerecord.dsl._ /* Do not remove, it scopes an implicit value */
-
+import com.github.aselab.activerecord.dsl._
+import com.google.inject.Inject
 import org.birdfeed.chirp.database.models._
+
 
 object SchemaTables extends ActiveRecordTables with PlaySupport {
 
