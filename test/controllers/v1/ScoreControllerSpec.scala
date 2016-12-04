@@ -1,7 +1,8 @@
 package controllers.v1
 
-import org.birdfeed.chirp.database.models.{Experiment, Sample, User}
+import org.birdfeed.chirp.database.models.{AccessToken, Experiment, Sample, User}
 import org.birdfeed.chirp.test.BaseSpec
+import org.joda.time.DateTime
 import play.api.libs.json._
 
 import scala.concurrent.Await
@@ -23,7 +24,10 @@ class ScoreControllerSpec extends BaseSpec {
     lazy val created = Await.result(
       wsClient
         .url(s"http://localhost:${portNumber.value}/v1/score")
-        .withHeaders("Chirp-Api-Key" -> testKey)
+        .withHeaders(
+          "Chirp-Api-Key" -> testKey,
+          "Chirp-Access-Token" -> "testToken"
+        )
         .put(Json.obj(
           "score" -> 2.5,
           "sample_id" -> sample.id,
@@ -37,7 +41,10 @@ class ScoreControllerSpec extends BaseSpec {
       lazy val retrieved = Await.result(
         wsClient
           .url(s"http://localhost:${portNumber.value}/v1/score/${(created.json \ "id").get}")
-          .withHeaders("Chirp-Api-Key" -> testKey)
+          .withHeaders(
+            "Chirp-Api-Key" -> testKey,
+            "Chirp-Access-Token" -> "testToken"
+          )
           .get, Duration.Inf
       )
 

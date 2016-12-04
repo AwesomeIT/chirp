@@ -3,6 +3,7 @@ package controllers.v1
 import com.google.inject.Inject
 import org.birdfeed.chirp.database.models._
 import org.birdfeed.chirp.test.BaseSpec
+import org.joda.time.DateTime
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.Await
@@ -10,11 +11,11 @@ import scala.concurrent.duration.Duration
 
 class SampleControllerSpec extends BaseSpec {
 
+
   lazy val uuid = java.util.UUID.randomUUID.toString
   lazy val user = User(
     java.util.UUID.randomUUID.toString, s"${uuid}@uuid.com", uuid, 1
   ).create
-
 
   // TODO: Only fails in TEST
   //  lazy val created = Await.result(
@@ -40,7 +41,10 @@ class SampleControllerSpec extends BaseSpec {
       lazy val retrieved = Await.result(
         wsClient
           .url(s"http://localhost:${port}/v1/sample/${created.id}")
-          .withHeaders("Chirp-Api-Key" -> testKey)
+          .withHeaders(
+            "Chirp-Api-Key" -> testKey,
+            "Chirp-Access-Token" -> "testToken"
+          )
           .get, Duration.Inf
       )
 
@@ -52,7 +56,10 @@ class SampleControllerSpec extends BaseSpec {
     "delete a created sample" in {
       Await.result(
         wsClient.url(s"http://localhost:${port}/v1/sample/${created.id}")
-          .withHeaders("Chirp-Api-Key" -> testKey)
+          .withHeaders(
+            "Chirp-Api-Key" -> testKey,
+            "Chirp-Access-Token" -> "testToken"
+          )
           .delete,
         Duration.Inf
       ).status must equal(204)

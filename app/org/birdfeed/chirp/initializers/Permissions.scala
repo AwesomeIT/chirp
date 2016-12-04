@@ -2,12 +2,13 @@ package org.birdfeed.chirp.initializers
 
 import akka.actor.ActorSystem
 import com.google.inject.{Inject, Singleton}
-import org.birdfeed.chirp.database.models.{Permission, Role}
+import org.birdfeed.chirp.database.models.{AccessToken, Permission, Role, User}
 import play.api.{Application, Configuration, Environment, Mode}
 import play.api.db.Database
 import com.github.aselab.activerecord._
 import com.github.aselab.activerecord.dsl._
-import org.birdfeed.chirp.database.{SchemaTables} /* Do not remove, it scopes an implicit value */
+import org.birdfeed.chirp.database.SchemaTables
+import org.joda.time.DateTime /* Do not remove, it scopes an implicit value */
 
 /**
   * Map permissions from models.
@@ -55,7 +56,6 @@ class Permissions @Inject()(
           conn.nativeSQL("TRUNCATE TABLE permissions_roles;")
       )
     }
-
   }
 
 
@@ -67,10 +67,6 @@ class Permissions @Inject()(
       Permission(s"$permission.write")
     )
   }
-
-//  val administrator = Role("Administrator")
-//  val researcher = Role("Researcher")
-//  val participant = Role("Participant")
 
   var roles = Seq(
     Role("Administrator").create,
@@ -89,4 +85,15 @@ class Permissions @Inject()(
   roles(0).save
   roles(1).save
   roles(2).save
+
+  if (env.mode == Mode.Test) {
+    lazy val user = User(
+      java.util.UUID.randomUUID.toString, s"${java.util.UUID.randomUUID.toString}@test.com", "foo", roles(0).id
+    ).create
+
+    AccessToken.findByOrCreate(AccessToken(user.id,
+      "testToken",
+      "freshy",
+      DateTime.now.plusDays(1).toDate), "userId", "token", "refreshToken", "expiryDate")
+  }
 }

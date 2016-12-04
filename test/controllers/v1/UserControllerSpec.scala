@@ -1,7 +1,8 @@
 package controllers.v1
 
-import org.birdfeed.chirp.database.models.User
+import org.birdfeed.chirp.database.models.{AccessToken, User}
 import org.birdfeed.chirp.test.BaseSpec
+import org.joda.time.DateTime
 import play.api.libs.json._
 
 import scala.concurrent.Await
@@ -17,7 +18,10 @@ class UserControllerSpec extends BaseSpec {
       lazy val response = Await.result(
         wsClient
           .url(s"http://localhost:${port}/v1/user")
-          .withHeaders("Chirp-Api-Key" -> testKey)
+          .withHeaders(
+            "Chirp-Api-Key" -> testKey,
+            "Chirp-Access-Token" -> "testToken"
+          )
           .put(Json.obj(
                           "name" -> username,
                           "email" -> email,
@@ -77,7 +81,10 @@ class UserControllerSpec extends BaseSpec {
 
       lazy val response = Await.result(
         wsClient.url(s"http://localhost:${port}/v1/user/${created.id}")
-          .withHeaders("Chirp-Api-Key" -> testKey)
+          .withHeaders(
+            "Chirp-Api-Key" -> testKey,
+            "Chirp-Access-Token" -> "testToken"
+          )
           .delete, Duration.Inf
       )
 

@@ -1,6 +1,6 @@
 package org.birdfeed.chirp.test
 
-import org.birdfeed.chirp.database.models.{AccessToken, ApiKey, User}
+import org.birdfeed.chirp.database.models.{AccessToken, ApiKey, Role, User}
 import org.joda.time.DateTime
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
