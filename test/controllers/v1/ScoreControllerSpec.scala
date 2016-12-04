@@ -1,18 +1,14 @@
 package controllers.v1
 
-import org.birdfeed.chirp.database.models.{ApiKey, Experiment, Sample, User}
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import org.birdfeed.chirp.database.models.{AccessToken, Experiment, Sample, User}
+import org.birdfeed.chirp.test.BaseSpec
+import org.joda.time.DateTime
 import play.api.libs.json._
-import play.api.libs.ws.WSClient
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-class ScoreControllerSpec extends PlaySpec with GuiceOneServerPerSuite {
-  val wsClient = app.injector.instanceOf[WSClient]
-  var testKey = ApiKey(true).create.key
-
+class ScoreControllerSpec extends BaseSpec {
 
   lazy val uuid = java.util.UUID.randomUUID.toString
   lazy val user = User(
@@ -28,7 +24,10 @@ class ScoreControllerSpec extends PlaySpec with GuiceOneServerPerSuite {
     lazy val created = Await.result(
       wsClient
         .url(s"http://localhost:${portNumber.value}/v1/score")
-        .withHeaders("Chirp-Api-Key" -> testKey)
+        .withHeaders(
+          "Chirp-Api-Key" -> testKey,
+          "Chirp-Access-Token" -> "testToken"
+        )
         .put(Json.obj(
           "score" -> 2.5,
           "sample_id" -> sample.id,
@@ -42,7 +41,10 @@ class ScoreControllerSpec extends PlaySpec with GuiceOneServerPerSuite {
       lazy val retrieved = Await.result(
         wsClient
           .url(s"http://localhost:${portNumber.value}/v1/score/${(created.json \ "id").get}")
-          .withHeaders("Chirp-Api-Key" -> testKey)
+          .withHeaders(
+            "Chirp-Api-Key" -> testKey,
+            "Chirp-Access-Token" -> "testToken"
+          )
           .get, Duration.Inf
       )
 

@@ -1,6 +1,8 @@
 import com.google.inject.AbstractModule
 import java.time.Clock
 
+import org.birdfeed.chirp.database.models.Permission
+import org.birdfeed.chirp.initializers.Permissions
 import services.{ApplicationTimer, AtomicCounter, Counter}
 
 /**

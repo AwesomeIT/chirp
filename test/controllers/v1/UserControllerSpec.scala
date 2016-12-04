@@ -1,18 +1,14 @@
 package controllers.v1
 
-import org.birdfeed.chirp.database.models.{ApiKey, User}
-import org.scalatest.DoNotDiscover
-import org.scalatestplus.play.guice.{GuiceOneServerPerSuite, GuiceOneServerPerTest}
-import org.scalatestplus.play.{ConfiguredServer, OneServerPerSuite, OneServerPerTest, PlaySpec}
+import org.birdfeed.chirp.database.models.{AccessToken, User}
+import org.birdfeed.chirp.test.BaseSpec
+import org.joda.time.DateTime
 import play.api.libs.json._
-import play.api.libs.ws.WSClient
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-class UserControllerSpec extends PlaySpec with GuiceOneServerPerSuite {
-  val wsClient = app.injector.instanceOf[WSClient]
-  var testKey = ApiKey(true).create.key
+class UserControllerSpec extends BaseSpec {
 
   "PUT /v1/user/create" should {
     "create a new user" in {
@@ -22,7 +18,10 @@ class UserControllerSpec extends PlaySpec with GuiceOneServerPerSuite {
       lazy val response = Await.result(
         wsClient
           .url(s"http://localhost:${port}/v1/user")
-          .withHeaders("Chirp-Api-Key" -> testKey)
+          .withHeaders(
+            "Chirp-Api-Key" -> testKey,
+            "Chirp-Access-Token" -> "testToken"
+          )
           .put(Json.obj(
                           "name" -> username,
                           "email" -> email,
@@ -82,7 +81,10 @@ class UserControllerSpec extends PlaySpec with GuiceOneServerPerSuite {
 
       lazy val response = Await.result(
         wsClient.url(s"http://localhost:${port}/v1/user/${created.id}")
-          .withHeaders("Chirp-Api-Key" -> testKey)
+          .withHeaders(
+            "Chirp-Api-Key" -> testKey,
+            "Chirp-Access-Token" -> "testToken"
+          )
           .delete, Duration.Inf
       )
 
