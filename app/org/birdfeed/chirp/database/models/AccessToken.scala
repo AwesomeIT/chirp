@@ -1,5 +1,6 @@
 package org.birdfeed.chirp.database.models
 
+import java.sql.Timestamp
 import java.util.Date
 
 import com.github.aselab.activerecord._
@@ -10,7 +11,7 @@ case class AccessToken(
                   @Required var userId: Long,
                   @Required @Unique var token: String,
                   @Required @Unique var refreshToken: String,
-                  @Required var expiryDate: Date
+                  @Required var expiryDate: Timestamp
                  ) extends ActiveRecord with Timestamps {
   lazy val user = belongsTo[User]
 
@@ -23,7 +24,7 @@ object AccessToken extends ActiveRecordCompanion[AccessToken] {
       userId,
       java.util.UUID.randomUUID.toString,
       java.util.UUID.randomUUID.toString,
-      DateTime.now.plusHours(1).toDate
+      new Timestamp(DateTime.now.plusDays(1).getMillis)
     )
   }
 }

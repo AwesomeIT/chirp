@@ -1,5 +1,7 @@
 package org.birdfeed.chirp.initializers
 
+import java.sql.Timestamp
+
 import com.google.inject.{Inject, Singleton}
 import org.birdfeed.chirp.database.SchemaTables
 import org.birdfeed.chirp.database.models.{AccessToken, Permission, Role, User}
@@ -77,7 +79,7 @@ class Permissions @Inject()(
     AccessToken.findByOrCreate(AccessToken(user.id,
       "testToken",
       "freshy",
-      DateTime.now.plusDays(1).toDate), "userId", "token", "refreshToken", "expiryDate")
+      new Timestamp(DateTime.now.plusDays(1).getMillis)), "userId", "token", "refreshToken", "expiryDate")
   }
 
   SchemaTables.cleanup

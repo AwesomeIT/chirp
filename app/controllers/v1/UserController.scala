@@ -64,7 +64,9 @@ class UserController @Inject()(actorSystem: ActorSystem, actionBuilder: ActionBu
   def retrieve(id: String) = ActionWithValidApiKey {
     actionBuilder.PatternAction("user", PatternType.EQUALITY).defaultHandler() {
       User.find(id.toInt) match {
-        case Some(user) => Future { Ok(user.toJson("id", "name", "email")) }
+        case Some(user) => Future {
+          Ok(user.toJson("id", "name", "email"))
+        }
         case None => Future { NotFound }
       }
     }
