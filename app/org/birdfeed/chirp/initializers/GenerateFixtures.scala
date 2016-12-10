@@ -3,7 +3,7 @@ package org.birdfeed.chirp.initializers
 import com.google.inject.{Inject, Singleton}
 import org.birdfeed.chirp.database.SchemaTables
 import org.birdfeed.chirp.database.models._
-import play.api.Environment
+import play.api.{Environment, Logger}
 import play.api.inject.DefaultApplicationLifecycle
 
 import scala.sys.process.Process
@@ -29,6 +29,9 @@ class GenerateFixtures @Inject()(lifecycle: DefaultApplicationLifecycle, env: En
     val e = Experiment(s"Experiment $n", researcher.id).create
     e.samples := Random.shuffle(samples).take(Random.nextInt(50))
   }
+
+  // Generate an API key
+  Logger.debug(s"Fixture generation complete! Use this API key: ${ApiKey(true).create.key}")
 
   SchemaTables.cleanup
 
