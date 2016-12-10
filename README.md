@@ -17,7 +17,7 @@ Install the following through your favorite package manager.
 
 ### Starting the API
 
-### Setting up fixtures
+#### Setting up fixtures
 You may want to play with some test data. To do so, please clear out your test database's `public` schema space and then run the following:
 
 ```bash
@@ -52,13 +52,15 @@ chmod +x chirp
 ./chirp
 ```
 ## API
-`hostname/v1/{resource}`
+```
+hostname/v1/{resource}
+```
 View the `routes` file for available resources and actions
 
 ### Security
 The Chirp API uses a two-key system to authorize clients to the service, and users to their resources. Your headers should define `Chirp-Api-Key` and `Chirp-Access-Token`. API keys are issued by administrators to developers and access tokens are issued per-session, per-user as resources are requested. Both the API key and access token are ISO-11578 compliant UUIDv4 strings.
 
-*It is **absolutely imperative** you use [HSTS-compliant HTTPS](https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security) to avoid interception of your requests*
+*It is absolutely imperative you use [HSTS-compliant HTTPS](https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security) to avoid interception of your requests*
 
 TODO: Enforce refresh tokens
 
@@ -69,8 +71,8 @@ Chirp-Api-Key: [your key]
 Content-Type: application/json
 
 {
-    email: 'foo@bar.baz'
-    password: 'hunter12'
+    "email": "foo@bar.baz",
+    "password": "hunter12"
 }
 ```
 ##### Response
