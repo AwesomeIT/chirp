@@ -24,7 +24,11 @@ You may want to play with some test data. To do so, please clear out your test d
 CREATE_FIXTURES=true sbt testProd
 ```
 
-The server will start, insert fixtures, and then kill its own PID from `target/universal/stage/RUNNING_PID`. We eventually plan to refactor this into a command you can invoke via `sbt`, but this works for now.
+The server will start, insert fixtures, and then kill its own PID from `target/universal/stage/RUNNING_PID`. We eventually plan to refactor this into a command you can invoke via `sbt`, but this works for now. The debug output will contain a message with an API key for you to use in your development environment:
+
+```
+[debug] application - Fixture generation complete! Use this API key: (key here)
+```
 
 #### Development
 All you really need to do is:

@@ -12,6 +12,10 @@ import play.api.mvc._
 
 import scala.concurrent._
 
+import org.json4s._
+import org.json4s.JsonDSL._
+import org.json4s.jackson.JsonMethods._
+
 
 @Singleton
 class UserController @Inject()(actorSystem: ActorSystem, actionBuilder: ActionBuilders)(implicit exec: ExecutionContext) extends Controller {
@@ -23,7 +27,14 @@ class UserController @Inject()(actorSystem: ActorSystem, actionBuilder: ActionBu
         (JsPath \ "password").read[String]
       )((email: String, password: String) => {
         User.authenticate(email, password)
-          .map { token => Ok(token.toJson("userId", "token", "refreshToken", "roleId")) }
+          .map { token =>
+            Ok(pretty(
+                ("userId" -> token.userId) ~
+                  ("token" -> token.token) ~
+                  ("refreshToken" -> token.refreshToken) ~
+                  ("roleId" -> token.user.toOption.map(_.roleId))
+            ))
+          }
       })
 
       request.body.validate.get match {
