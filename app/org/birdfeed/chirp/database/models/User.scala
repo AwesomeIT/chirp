@@ -30,10 +30,9 @@ object User extends ActiveRecordCompanion[User] {
   }
 
   def authenticate(email: String, password: String): Option[AccessToken] = {
-    this.findBy("email", email)
-      .collect {
-        case user if password.isBcrypted(user.bcryptHash) => AccessToken.mint(user.id).create
-      }
+    this.findBy("email", email).collect {
+      case user if password.isBcrypted(user.bcryptHash) => AccessToken.mint(user.id).create
+    }
   }
 
   def refresh(refreshToken: String): Option[AccessToken] = {
