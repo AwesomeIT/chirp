@@ -18,7 +18,7 @@ libraryDependencies ++= Seq(
 
   // Thank you @wsargent: https://github.com/playframework/scalatestplus-play/issues/55#issuecomment-259208681
   "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1",
-  //  "io.github.jeremyrsmith" %% "scalamock-scalatest-support" % "3.0.0",
+  // "io.github.jeremyrsmith" %% "scalamock-scalatest-support" % "3.0.0",
   "com.h2database" % "h2" % "1.4.185",
 
 

@@ -1,10 +1,7 @@
 package controllers.v1
 
-import com.google.inject.Inject
 import org.birdfeed.chirp.database.models._
 import org.birdfeed.chirp.test.BaseSpec
-import org.joda.time.DateTime
-import play.api.libs.ws.WSClient
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -65,17 +62,4 @@ class SampleControllerSpec extends BaseSpec {
       ).status must equal(204)
     }
   }
-
-//  "GET /v1/sample/:id/scores" should {
-//    "retrieve a list of scores" in {
-//      lazy val retrieved = Await.result (
-//        wsClient
-//          .url(s"http://localhost:${port}/v1/sample/${(created.json \ "id").get}/scores")
-//          .withHeaders("Chirp-Api-Key" -> testKey)
-//          .get, Duration.Inf
-//        )
-//
-//      retrieved.status must equal(200)
-//    }
-//  }
 }

@@ -1,8 +1,7 @@
 package controllers.v1
 
-import org.birdfeed.chirp.database.models.{AccessToken, User}
+import org.birdfeed.chirp.database.models.User
 import org.birdfeed.chirp.test.BaseSpec
-import org.joda.time.DateTime
 import play.api.libs.json._
 
 import scala.concurrent.Await
@@ -60,14 +59,4 @@ class ExperimentControllerSpec extends BaseSpec {
       ).status must equal(204)
     }
   }
-
-//  "GET /v1/experiment/:id/samples" should {
-//    "get a list of samples for an experiment" in {
-//      Await.result(
-//        wsClient.url(s"http://localhost:${port}/v1/experiment/${(created.json \ "id").get}/samples")
-//          .withHeaders("Chirp-Api-Key" -> testKey)
-//            .get, Duration.Inf
-//      ).status must equal(200)
-//    }
-//  }
 }
