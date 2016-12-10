@@ -1,8 +1,7 @@
 package controllers.v1
 
-import org.birdfeed.chirp.database.models.{AccessToken, User}
+import org.birdfeed.chirp.database.models.User
 import org.birdfeed.chirp.test.BaseSpec
-import org.joda.time.DateTime
 import play.api.libs.json._
 
 import scala.concurrent.Await
@@ -91,27 +90,4 @@ class UserControllerSpec extends BaseSpec {
       response.status must equal(204)
     }
   }
-
-  //  "GET /v1/user/:id/experiments" should {
-  //    "get all experiments a user created" in {
-  //      lazy val username = java.util.UUID.randomUUID.toString
-  //      lazy val email = s"${username}@email.com"
-  //      lazy val created = Await.result(
-  //        User.create("name", email, email, 1), Duration.Inf
-  //      ).get
-  //
-  //      lazy val experiment = Await.result(
-  //        Experiment.create(
-  //          java.util.UUID.randomUUID.toString, created.id), Duration.Inf).get
-  //
-  //      val response = Await.result(
-  //        wsClient.url(s"http://localhost:${port}/v1/user/${created.id}/experiments")
-  //          .withHeaders("Chirp-Api-Key" -> testKey)
-  //          .get, Duration.Inf
-  //      )
-  //
-  //      response.status must equal(200)
-  //
-  //    }
-  //  }
 }

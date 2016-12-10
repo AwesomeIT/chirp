@@ -1,10 +1,7 @@
 package controllers.v1
 
-import com.google.inject.Inject
 import org.birdfeed.chirp.database.models._
 import org.birdfeed.chirp.test.BaseSpec
-import org.joda.time.DateTime
-import play.api.libs.ws.WSClient
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -14,33 +11,35 @@ class SampleControllerSpec extends BaseSpec {
 
   lazy val uuid = java.util.UUID.randomUUID.toString
   lazy val user = User(
-    java.util.UUID.randomUUID.toString, s"${uuid}@uuid.com", uuid, 1
+    java.util.UUID.randomUUID.toString, s"$uuid@uuid.com", uuid, 1
   ).create
 
-  // TODO: Only fails in TEST
-  //  lazy val created = Await.result(
-  //    wsClient
-  //      .url(s"http://localhost:${port}/v1/sample")
-  //      .withHeaders("Content-Type" -> "application/octet-stream")
-  //      .withQueryString(
-  //        "user_id" -> user.id.toString,
-  //        "file_name" -> "scala_test.wav"
-  //      ).put(payload), Duration.Inf
-  //  )
-  //
-  //  "PUT /v1/sample/create" should {
-  //    "create a new sample" in {
-  //      created.status must equal(201)
-  //    }
-  //  }
+  lazy val created = Await.result(
+    wsClient
+      .url(s"http://localhost:$port/v1/sample")
+      .withHeaders(
+        "Content-Type" -> "application/octet-stream",
+        "Chirp-Api-Key" -> testKey,
+        "Chirp-Access-Token" -> "testToken"
+      )
+      .withQueryString(
+        "user_id" -> user.id.toString,
+        "file_name" -> "scala_test.wav"
+      ).put("payload"), Duration.Inf
+  )
 
-  lazy val created = Sample("foo", 1, "foo").create
+    "PUT /v1/sample/create" should {
+      "create a new sample" in {
+        created.status must equal(201)
+      }
+    }
+
 
   "GET /v1/sample/:id" should {
     "retrieve a created sample" in {
       lazy val retrieved = Await.result(
         wsClient
-          .url(s"http://localhost:${port}/v1/sample/${created.id}")
+          .url(s"http://localhost:$port/v1/sample/${(created.json \ "id").get}")
           .withHeaders(
             "Chirp-Api-Key" -> testKey,
             "Chirp-Access-Token" -> "testToken"
@@ -55,7 +54,7 @@ class SampleControllerSpec extends BaseSpec {
   "DELETE /v1/sample/:id" should {
     "delete a created sample" in {
       Await.result(
-        wsClient.url(s"http://localhost:${port}/v1/sample/${created.id}")
+        wsClient.url(s"http://localhost:$port/v1/sample/${(created.json \ "id").get}")
           .withHeaders(
             "Chirp-Api-Key" -> testKey,
             "Chirp-Access-Token" -> "testToken"
@@ -65,17 +64,4 @@ class SampleControllerSpec extends BaseSpec {
       ).status must equal(204)
     }
   }
-
-//  "GET /v1/sample/:id/scores" should {
-//    "retrieve a list of scores" in {
-//      lazy val retrieved = Await.result (
-//        wsClient
-//          .url(s"http://localhost:${port}/v1/sample/${(created.json \ "id").get}/scores")
-//          .withHeaders("Chirp-Api-Key" -> testKey)
-//          .get, Duration.Inf
-//        )
-//
-//      retrieved.status must equal(200)
-//    }
-//  }
 }

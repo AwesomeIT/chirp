@@ -63,17 +63,17 @@ class Permissions @Inject()(
     roles = roles.map(SchemaTables.roles.insert)
   }
 
-  roles(0).permissions ++= permissionable.flatten
+  roles.head.permissions ++= permissionable.flatten
   roles(1).permissions ++= permissionable.slice(3, 5).flatten
   roles(2).permissions ++= permissionable.last
 
-  roles(0).save
+  roles.head.save
   roles(1).save
   roles(2).save
 
   if (env.mode == Mode.Test) {
     lazy val user = User(
-      java.util.UUID.randomUUID.toString, s"${java.util.UUID.randomUUID.toString}@test.com", "foo", roles(0).id
+      java.util.UUID.randomUUID.toString, s"${java.util.UUID.randomUUID.toString}@test.com", "foo", roles.head.id
     ).create
 
     AccessToken.findByOrCreate(AccessToken(user.id,

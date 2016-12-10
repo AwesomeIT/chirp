@@ -15,5 +15,11 @@ import com.google.inject.AbstractModule
 class InitializerModule extends AbstractModule {
   override def configure() = {
     bind(classOf[Permissions]).asEagerSingleton()
+
+    // This is kind of stupid, but it is easier
+    // than writing all of the SQL by hand
+    if (sys.env.get("CREATE_FIXTURES").isDefined) {
+      bind(classOf[GenerateFixtures]).asEagerSingleton()
+    }
   }
 }
