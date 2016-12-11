@@ -31,7 +31,7 @@ DELETE  /v1/experiment/:id          @controllers.v1.ExperimentController.delete(
 
 
 # Samples
-PUT     /v1/sample                  @controllers.v1.SampleController.create(file_name: String, user_id: Int)
+PUT     /v1/sample                  @controllers.v1.SampleController.create(sampleName: String, fileName: String)
 GET     /v1/sample                  @controllers.v1.SampleController.list
 GET     /v1/sample/:id              @controllers.v1.SampleController.retrieve(id)
 DELETE  /v1/sample/:id              @controllers.v1.SampleController.delete(id)
