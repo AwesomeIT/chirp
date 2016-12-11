@@ -22,14 +22,17 @@ DELETE  /v1/user/:id                @controllers.v1.UserController.delete(id)
 POST    /v1/user/authenticate       @controllers.v1.UserController.authenticate
 
 ## Experiments
-PUT     /v1/experiment       @controllers.v1.ExperimentController.create
+PUT     /v1/experiment              @controllers.v1.ExperimentController.create
+GET     /v1/experiment              @controllers.v1.ExperimentController.list
 GET     /v1/experiment/:id          @controllers.v1.ExperimentController.retrieve(id)
+POST    /v1/experiment/:id/samples  @controllers.v1.ExperimentController.associate(id)
 DELETE  /v1/experiment/:id          @controllers.v1.ExperimentController.delete(id)
 ##POST    /v1/experiment/:id          controllers.v1.ExperimentController.update(id, _)
 
 
 # Samples
 PUT     /v1/sample                  @controllers.v1.SampleController.create(file_name: String, user_id: Int)
+GET     /v1/sample                  @controllers.v1.SampleController.list
 GET     /v1/sample/:id              @controllers.v1.SampleController.retrieve(id)
 DELETE  /v1/sample/:id              @controllers.v1.SampleController.delete(id)
 

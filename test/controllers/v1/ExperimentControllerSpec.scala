@@ -1,6 +1,6 @@
 package controllers.v1
 
-import org.birdfeed.chirp.database.models.User
+import org.birdfeed.chirp.database.models.{AccessToken, User}
 import org.birdfeed.chirp.test.BaseSpec
 import play.api.libs.json._
 
@@ -10,9 +10,10 @@ import scala.concurrent.duration.Duration
 class ExperimentControllerSpec extends BaseSpec {
 
   lazy val uuid = java.util.UUID.randomUUID.toString
-  lazy val user = User(
-    java.util.UUID.randomUUID.toString, s"${uuid}@uuid.com", uuid, 1
-  ).create
+  lazy val user = AccessToken.findBy("token", "testToken")
+    .map(_.user.toOption)
+    .head.get
+
   lazy val created = Await.result(
     wsClient
       .url(s"http://localhost:${port}/v1/experiment")
@@ -22,7 +23,7 @@ class ExperimentControllerSpec extends BaseSpec {
       )
       .put(Json.obj(
         "name" -> "name",
-        "user_id" -> user.id
+        "userId" -> user.id
       )), Duration.Inf)
 
 

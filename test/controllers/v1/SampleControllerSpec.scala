@@ -23,8 +23,8 @@ class SampleControllerSpec extends BaseSpec {
         "Chirp-Access-Token" -> "testToken"
       )
       .withQueryString(
-        "user_id" -> user.id.toString,
-        "file_name" -> "scala_test.wav"
+        "fileName" -> "scala_test.wav",
+        "sampleName" -> "Foobius Barius"
       ).put("payload"), Duration.Inf
   )
 
