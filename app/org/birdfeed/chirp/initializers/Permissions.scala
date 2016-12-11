@@ -59,10 +59,6 @@ class Permissions @Inject()(
     Role("Participant").create
   )
 
-  Role.inTransaction {
-    roles = roles.map(SchemaTables.roles.insert)
-  }
-
   roles.head.permissions ++= permissionable.flatten
   roles(1).permissions ++= permissionable.slice(3, 5).flatten
   roles(2).permissions ++= permissionable.last
