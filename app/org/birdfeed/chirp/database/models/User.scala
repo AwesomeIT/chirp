@@ -18,8 +18,7 @@ case class User(
 
   lazy val role = belongsTo[Role]
 
-  val identifier = id.toString
-
+  def identifier = id.toString
   def roles = role.toArray.toList
   def permissions = role.permissions.toList
 }
