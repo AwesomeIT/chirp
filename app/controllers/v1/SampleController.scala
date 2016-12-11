@@ -3,29 +3,28 @@ package controllers.v1
 import javax.inject.Inject
 
 import akka.actor.ActorSystem
-import be.objectify.deadbolt.scala.{ActionBuilders, AuthenticatedRequest}
 import be.objectify.deadbolt.scala.models.PatternType
+import be.objectify.deadbolt.scala.{ActionBuilders, AuthenticatedRequest}
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.github.aselab.activerecord.dsl._
 import com.google.inject._
 import org.birdfeed.chirp.actions.ActionWithValidApiKey
 import org.birdfeed.chirp.adapter.S3
-import org.birdfeed.chirp.database.models.{Experiment, Sample}
+import org.birdfeed.chirp.database.models.Sample
 import org.birdfeed.chirp.errors.JsonError
 import org.joda.time.DateTime
 import org.json4s.JsonDSL._
+import org.json4s.jackson.JsonMethods._
 import play.api.mvc._
-import play.api.Logger
 
 import scala.concurrent._
-import org.json4s.jackson.JsonMethods._
 
 
 @Singleton
 class SampleController @Inject()(actorSystem: ActorSystem, actionBuilder: ActionBuilders)
                                 (implicit exec: ExecutionContext) extends Controller with S3 with JsonError {
 
-  def create(fileName: String, userId: Int) = ActionWithValidApiKey {
+  def create(sampleName: String, fileName: String) = ActionWithValidApiKey {
     actionBuilder.PatternAction("sample.write", PatternType.EQUALITY).defaultHandler()(parse.raw) { request =>
 
       request.body.asBytes(request.body.size).map(_.toArray) match {
@@ -34,7 +33,7 @@ class SampleController @Inject()(actorSystem: ActorSystem, actionBuilder: Action
           meta.setContentLength(bytes.length)
 
           Future {
-            Created(Sample(fileName, userId, bucket.putObject(
+            Created(Sample(sampleName, request.subject.map(_.identifier.toLong).get, bucket.putObject(
               fileName, bytes, meta
             ).key).create.toJson)
           }
