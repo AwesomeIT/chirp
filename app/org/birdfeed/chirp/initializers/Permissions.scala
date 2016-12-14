@@ -43,43 +43,41 @@ class Permissions @Inject()(
     }
   }
 
-  if (Permission.all.isEmpty) {
-    val permissionable = Seq(
-      "user", "accessToken", "apiKey", "sample", "experiment", "score"
-    ).map { permission =>
-      Seq(
-        Permission(permission),
-        Permission(s"$permission.write")
-      )
-    }
-
-    val roles = Seq(
-      Role("Administrator").create,
-      Role("Researcher").create,
-      Role("Participant").create
+  val permissionable = Seq(
+    "user", "accessToken", "apiKey", "sample", "experiment", "score"
+  ).map { permission =>
+    Seq(
+      Permission(permission).create,
+      Permission(s"$permission.write").create
     )
+  }
 
-    roles.head.permissions ++= permissionable.flatten
-    roles(1).permissions += permissionable.head.head
-    roles(2).permissions += permissionable.head.head
-    roles(1).permissions ++= permissionable.slice(3, 5).flatten
-    roles(2).permissions ++= permissionable.slice(3, 4).map(_.head)
-    roles(2).permissions ++= permissionable(5)
+  val roles = Seq(
+    Role("Administrator").create,
+    Role("Researcher").create,
+    Role("Participant").create
+  )
 
-    roles.head.save
-    roles(1).save
-    roles(2).save
+  roles.head.permissions ++= permissionable.flatten
+  roles(1).permissions += permissionable.head.head
+  roles(2).permissions += permissionable.head.head
+  roles(1).permissions ++= permissionable.slice(3, 5).flatten
+  roles(2).permissions ++= permissionable.slice(3, 5).map(_.head)
+  roles(2).permissions ++= permissionable(5)
 
-    if (env.mode == Mode.Test) {
-      lazy val user = User(
-        java.util.UUID.randomUUID.toString, s"${java.util.UUID.randomUUID.toString}@test.com", "foo", roles.head.id
-      ).create
+  roles.head.save
+  roles(1).save
+  roles(2).save
 
-      AccessToken.findByOrCreate(AccessToken(user.id,
-        "testToken",
-        "freshy",
-        new Timestamp(DateTime.now.plusDays(1).getMillis)), "userId", "token", "refreshToken", "expiryDate")
-    }
+  if (env.mode == Mode.Test) {
+    lazy val user = User(
+      java.util.UUID.randomUUID.toString, s"${java.util.UUID.randomUUID.toString}@test.com", "foo", roles.head.id
+    ).create
+
+    AccessToken.findByOrCreate(AccessToken(user.id,
+      "testToken",
+      "freshy",
+      new Timestamp(DateTime.now.plusDays(1).getMillis)), "userId", "token", "refreshToken", "expiryDate")
   }
 
   SchemaTables.cleanup
