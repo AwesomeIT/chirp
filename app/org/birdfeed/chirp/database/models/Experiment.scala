@@ -12,6 +12,7 @@ case class Experiment @Inject()(
                      ) extends ActiveRecord with Timestamps {
 
   lazy val samples = hasAndBelongsToMany[Sample]
+  lazy val scores = hasMany[Score]
 }
 
 object Experiment extends ActiveRecordCompanion[Experiment]
