@@ -91,7 +91,7 @@ class SampleController @Inject()(actorSystem: ActorSystem, actionBuilder: Action
 
   // TODO: This is disgusting
   private def sampleScope(request: AuthenticatedRequest[AnyContent]) = {
-    if (request.subject.map(_.roles).map(_.map(_.name)).get.contains("Researcher")) {
+    if (request.subject.map(_.roles).map(_.map(_.name)).map(_.contains("Researcher")).getOrElse(true)) {
       Sample.where(_.userId === request.subject.map(_.identifier.toLong))
     } else { Sample.all }
   }

@@ -10,7 +10,7 @@ case class Score(
                  @Required var userId: Long
                ) extends ActiveRecord with Timestamps {
   lazy val user = belongsTo[User]
-  lazy val sample = hasMany[Sample]
+  lazy val sample = belongsTo[Sample]
   lazy val experiment = belongsTo[Experiment]
 }
 

@@ -23,8 +23,8 @@ POST    /v1/user/authenticate       @controllers.v1.UserController.authenticate
 
 ## Experiments
 PUT     /v1/experiment              @controllers.v1.ExperimentController.create
-GET     /v1/experiment              @controllers.v1.ExperimentController.list
-GET     /v1/experiment/:id          @controllers.v1.ExperimentController.retrieve(id)
+GET     /v1/experiment              @controllers.v1.ExperimentController.list(all: Option[String])
+GET     /v1/experiment/:id          @controllers.v1.ExperimentController.retrieve(id: String, all: Option[String])
 POST    /v1/experiment/:id/samples  @controllers.v1.ExperimentController.associate(id)
 DELETE  /v1/experiment/:id          @controllers.v1.ExperimentController.delete(id)
 ##POST    /v1/experiment/:id          controllers.v1.ExperimentController.update(id, _)
