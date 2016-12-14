@@ -60,6 +60,8 @@ class Permissions @Inject()(
     )
 
     roles.head.permissions ++= permissionable.flatten
+    roles(1).permissions += permissionable.head.head
+    roles(2).permissions += permissionable.head.head
     roles(1).permissions ++= permissionable.slice(3, 5).flatten
     roles(2).permissions ++= permissionable.slice(3, 4).map(_.head)
     roles(2).permissions ++= permissionable(5)
