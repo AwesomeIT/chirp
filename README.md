@@ -1,5 +1,10 @@
-# chirp
-An API built for speech pathology training and data collection, powered by Scala, Play, and PostgreSQL
+chirp (DEPRECATED, SEE NOTES)
+===========
+
+This project has been deprecated by the new API and its components. REST services are now provided by [turaco](https://github.com/birdfeed/turaco), intensive compute tasks are facilitated by [myna](https://github.com/birdfeed/myna), and all database models can be found in [kagu](https://github.com/birdfeed/kagu).
+
+PS: We loved using Scala, loved the community, loved contributing, and sincerely hope to be back in the future. The lack of stable test frameworks that support popular libraries turned us away, and having to manually wrap Akka::HTTP and write so much from scratch was a decision our small team could not concede to. 
+
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/8801f33e7ed44e2db5162d448e9cbddf)](https://www.codacy.com/app/levit/chirp?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=birdfeed/chirp&amp;utm_campaign=Badge_Grade)
 [![CircleCI](https://circleci.com/gh/birdfeed/chirp/tree/master.svg?style=shield)](https://circleci.com/gh/birdfeed/chirp/tree/master)
